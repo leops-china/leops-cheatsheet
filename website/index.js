@@ -55,7 +55,7 @@ new Docute({
     'https://github.com/leops-china/leops-cheatsheet/tree/master/website/docs',
   editLinkText: '在 GitHub 上编辑此页',
   router: {
-    mode: 'history'
+    mode: 'hash'
   },
   detectSystemDarkTheme: true,
   darkThemeToggler: true,
