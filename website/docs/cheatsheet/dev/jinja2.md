@@ -55,15 +55,7 @@
 - urlize(value, trim_url_limit = None, nofollow = False): 接 受一个 url, 转换成一个<a>标签表示的 link, 这个 link 的 href 为传入的 url, innerText 是 url 截取前 trim_url_limit 个字符, nofollow 设置为 true 时, 会为这个 link 加入一个属性 rel='nofollow'
 - wordcount(string): 计算 string 中的单词数
 - wordwrap(string, width = 79, break_long_words = True): 返 回经过包装的 width 指定宽度的字符, 也就是说每读取 width 个字符就会换行. , break_long_words 表明在获取到 width 个字 符之后, 如果一个单词还没有结束, 是否截断单词, False 将不会截断
-- xmlattr(d, autospace = True): 通过接受一个字典, 创建一个 SGML/XML 属性列表, 例如:
-	```
-	<ul {{ {'class' = 'my_list', 'missing': none, 'id': 'list'} | xmlattr }} />
-	```
-	可以得到输出
-	```
-	<ul class='my_list' id='list' />
-	```
-	字典中指定的值为 none 的, 将不会被解析成标签属性.
+- xmlattr(d, autospace = True): 通过接受一个字典, 创建一个 SGML/XML 属性列表
 
 ## 内建测试
 
