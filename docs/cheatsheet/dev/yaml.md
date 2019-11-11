@@ -227,7 +227,7 @@ test:
 
 - `#` Throwaway comment indicator
 
-- ``@` Both reserved for future use
+- `@` Both reserved for future use
 
 ### Special Keys
 
@@ -285,9 +285,9 @@ C
 
 Additional
 
-"\e": ESC
-"\_": NBSP
-"\N": NEL
-"\L": LS
-"\P": PS
+- `"\e"`: ESC
+- `"\_"`: NBSP
+- `"\N"`: NEL
+- `"\L"`: LS
+- `"\P"`: PS
 
