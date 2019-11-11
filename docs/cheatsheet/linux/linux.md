@@ -125,3 +125,77 @@ echo 0 > tracing_on
 trace-cmd record -p function_graph -g do_sys_open -O funcgraph-proc ls
 trace-cmd report
 ```
+
+
+## grep
+
+```bash
+grep -i -w vivek /etc/passwd   #搜索大小写任意的 vivek(即不区分大小写的搜索)
+grep -E -i -w 'vivek|raj' /etc/passwd　#搜索大小写任意的 vivek 或 raj
+```
+
+```
+[:alnum:] - 字母数字字符
+[:alpha:] - 字母字符
+[:blank:] - 空字符: 空格键符 和 制表符
+[:digit:] - 数字: '0 1 2 3 4 5 6 7 8 9'
+[:lower:] - 小写字母: 'a b c d e f g h i j k l m n o p q r s t u v w x y z'
+[:space:] - 空格字符: 制表符、换行符、垂直制表符、换页符、回车符和空格键符
+[:upper:] - 大写字母: 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'
+```
+
+## sed
+
+```bash
+sed -n '{/access fail/{g;p}};h' access.log  # 打印匹配行的上一行
+# sed 会逐行处理文件， 首先判断该行是否匹配（或包含）access fail关键字，
+#　若没有匹配，仅执行h，即将该行以覆盖方式放到后台（一个缓冲区）；
+# 若匹配上了，则执行后面的命令（{g;p}），g表示将后台内容挪到前台来（即将上一行覆盖当前行内容），p打印该行。
+
+
+```
+
+## sort
+
+```bash
+sort -te -k2,2n -k1,1n test.txt   # 排序浮点数
+8.461754562e-07
+8.959458896e-07
+8.831553093e-06
+8.387280091e-05
+8.391373668e-05
+8.547354437e-05
+8.936111118e-05
+# -te将你的数字分成两个字段,用e将尾数与指数分开. -k2,2表示首先按指数排序,然后-k1,1表示接下来用你的尾数排序.
+
+```
+
+## jq
+
+> https://github.com/stedolan/jq/wiki/Cookbook
+
+```bash
+echo $json_data | jq -r '.status.phase'
+echo $json_data | jq -r '.status.conditions[] | select(.status != "True") | "    type=\(.type), message=\(.message)"'
+echo $json_data | jq -r '.spec.selector | to_entries | .[] | "\(.key)=\(.value),"'
+
+jq -cn '[limit(5; range(2)|range(2))]'
+printf '%s\n' '{"a":{"b":[{"c":0},{"d":1}]}}' | jq -c 'path(..)'
+
+json='[{"genre":"deep house"}, {"genre": "progressive house"}, {"volume": "wubwubwub"}]'
+
+echo "$json" | jq -c '.[] | select(.genre | . and contains("house"))?'
+{"genre":"deep house"}
+{"genre":"progressive house"}
+
+cat file.json | jq '.[] | select(.age == 36)'
+cat file.json | jq 'map({ _id, email })'
+cat file.json | jq 'reduce .[] as $item (0; . + $item.age)'
+
+```
+
+## diff
+
+```bash
+diff -u old new | sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/"   # 颜色显示
+```

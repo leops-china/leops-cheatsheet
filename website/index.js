@@ -222,6 +222,10 @@ new Docute({
         {
           title: 'Prometheus',
           link: '/cheatsheet/monitor/prometheus'
+        },
+        {
+          title: 'Zabbix',
+          link: '/cheatsheet/monitor/zabbix'
         }
       ]
     },
