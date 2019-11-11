@@ -192,6 +192,10 @@ new Docute({
         {
           title: 'Git',
           link: '/cheatsheet/linux/git'
+        },
+        {
+          title: 'Cron',
+          link: '/cheatsheet/linux/cron'
         }
       ]
     },
