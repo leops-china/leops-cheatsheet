@@ -844,7 +844,7 @@ get_ipv6(){
 ```
 
 ## 防火墙
-```
+```bash
 # 设置 防火墙规则
 add_iptables(){
 	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport $1 -j ACCEPT

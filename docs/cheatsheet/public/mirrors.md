@@ -1,6 +1,6 @@
 # 常见软件镜像
 
-> 国内的热门的[镜像站点](https://leops.cn/sites)
+> 用于设置常用软件的国内镜像，以便加速下载资源。国内提供的[镜像站点](https://leops.cn/sites)。
 
 ## centos
 
@@ -82,7 +82,7 @@ linux 下: 修改 ~/.pip/pip.conf （如果没有自己创建一个）， 内容
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-## easy_install 源
+## easy_install
 
 ```bash
 cat >> ~/.pydistutils.cfg  <<EOF
@@ -111,7 +111,9 @@ export GO111MODULE=on
 export GO_PROXY=https://mirrors.aliyun.com/goproxy/,https://goproxy.io,https://gorpoxy.cn
 ```
 
-1.使用 go1.11 以上版本并开启 go module 机制 2.导出 GOPROXY 环境变量
+1.使用 go1.11 以上版本并开启 go module 机制
+
+2.导出 GOPROXY 环境变量
 
 ```bash
 export GOPROXY=https://mirrors.aliyun.com/goproxy/
