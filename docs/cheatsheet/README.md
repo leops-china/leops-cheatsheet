@@ -15,3 +15,5 @@ https://github.com/chrisallenlane/cheat
 https://github.com/adambard/learnxinyminutes-docs
 
 https://devhints.io/
+
+https://www.cheatography.com/

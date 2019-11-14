@@ -122,6 +122,19 @@ new Docute({
   ],
   sidebar: [
     {
+      title: '公共服务',
+      children: [
+        {
+          title: '常用软件镜像',
+          link: '/cheatsheet/public/mirrors'
+        },
+        {
+          title: '常用公共服务',
+          link: '/cheatsheet/public/public'
+        }
+      ]
+    },
+    {
       title: '语言',
       children: [
         {

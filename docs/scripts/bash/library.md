@@ -1,6 +1,6 @@
 ## Docker 容器
 
-```bashDD
+```bash
 # $1: container name
 func_docker_destroy_container(){
 	local exist=`docker ps -a |awk '{print $NF}'|grep $1`
@@ -823,4 +823,85 @@ cidr_default_gw_2 192.168.10.1/16
 # => 192.168.255.254
 cidr_default_gw_2 172.17.18.19/20
 # => 172.17.31.254
+
+
+# 获取外网ip
+get_ip(){
+    local IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
+    [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
+    [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipinfo.io/ip )
+	[ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 api.ip.sb/ip )
+	[ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 members.3322.org/dyndns/getip )
+	[ -z ${IP} ] && IP=$( ip -4 route get 8.8.8.8 2>/dev/null | head -1 | awk '{print $7}' )
+    echo ${IP}
+}
+
+get_ipv6(){
+    local ipv6=$(wget -qO- -t1 -T2 ipv6.icanhazip.com)
+    [ -z ${ipv6} ] && return 1 || return 0
+}
+
+```
+
+## 防火墙
+```
+# 设置 防火墙规则
+add_iptables(){
+	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport $1 -j ACCEPT
+	iptables -I INPUT -m state --state NEW -m udp -p udp --dport $1 -j ACCEPT
+	ip6tables -I INPUT -m state --state NEW -m tcp -p tcp --dport $1 -j ACCEPT
+	ip6tables -I INPUT -m state --state NEW -m udp -p udp --dport $1 -j ACCEPT
+}
+del_iptables(){
+	iptables -D INPUT -m state --state NEW -m tcp -p tcp --dport $1 -j ACCEPT
+	iptables -D INPUT -m state --state NEW -m udp -p udp --dport $1 -j ACCEPT
+	ip6tables -D INPUT -m state --state NEW -m tcp -p tcp --dport $1 -j ACCEPT
+	ip6tables -D INPUT -m state --state NEW -m udp -p udp --dport $1 -j ACCEPT
+}
+save_iptables(){
+	if [[ ${release} == "centos" ]]; then
+		service iptables save
+		service ip6tables save
+	else
+		iptables-save > /etc/iptables.up.rules
+		ip6tables-save > /etc/ip6tables.up.rules
+	fi
+}
+```
+
+## 其他
+```bash
+check_sys(){
+	if [[ -f /etc/redhat-release ]]; then
+		release="centos"
+	elif cat /etc/issue | grep -q -E -i "debian"; then
+		release="debian"
+	elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+		release="ubuntu"
+	elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+		release="centos"
+	elif cat /proc/version | grep -q -E -i "debian"; then
+		release="debian"
+	elif cat /proc/version | grep -q -E -i "ubuntu"; then
+		release="ubuntu"
+	elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+		release="centos"
+    fi
+	bit=`uname -m`
+}
+
+# 下载文件
+download(){
+    local filename=$(basename $1)
+    if [ -f ${1} ]; then
+        echo "${filename} [found]"
+    else
+        echo "${filename} not found, download now..."
+        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2}
+        if [ $? -ne 0 ]; then
+            echo -e "[${red}Error${plain}] Download ${filename} failed."
+            exit 1
+        fi
+    fi
+}
 ```
