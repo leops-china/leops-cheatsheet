@@ -102,20 +102,25 @@ bundle config mirror.https://rubygems.org https://gems.ruby-china.com
 
 ```bash
 npm config set registry https://registry.npm.taobao.org
+npm config list
+```
+
+```bash
+yarn config set registry https://registry.npm.taobao.org
+yarn config list
 ```
 
 ## go 代理
 
+- https://mirrors.aliyun.com/goproxy/
+- https://goproxy.io
+- https://gorpoxy.cn
+
+1. 使用 go1.11 以上版本并开启 go module 机制
+2. 导出 GOPROXY 环境变量
+
 ```bash
 export GO111MODULE=on
-export GO_PROXY=https://mirrors.aliyun.com/goproxy/,https://goproxy.io,https://gorpoxy.cn
-```
-
-1.使用 go1.11 以上版本并开启 go module 机制
-
-2.导出 GOPROXY 环境变量
-
-```bash
 export GOPROXY=https://mirrors.aliyun.com/goproxy/
 ```
 
@@ -183,7 +188,7 @@ cat > /etc/docker/daemon.json <<EOF
     "exec-opts": ["native.cgroupdriver=systemd"],
     "registry-mirrors": [
         "https://docker.mirrors.ustc.edu.cn/",
-        "registry.docker-cn.com"
+        "https://registry.docker-cn.com"
     ]
 }
 EOF
@@ -278,7 +283,7 @@ maven 的 `settings.xml`
 
 maven 项目的`pom.xml`
 
-```
+```xml
 <repositories>
     <repository>
         <id>nexus-163</id>

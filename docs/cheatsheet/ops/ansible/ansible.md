@@ -1,3 +1,11 @@
+# Ansible
+
+- [官方网站](https://www.ansible.com/)
+- [官方文档](https://docs.ansible.com)
+- [GitHub](https://github.com/ansible/ansible)
+- [Ansible 系列文章](https://lework.github.io/2016/11/19/Ansible-zhuan-ti-wen-zhang-zong-lan/)
+- [Ansible 系列视频]()
+
 ## 怎么为任务设置环境变量
 
 ```yaml

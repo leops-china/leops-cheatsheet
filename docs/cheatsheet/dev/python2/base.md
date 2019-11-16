@@ -1,3 +1,5 @@
+# python2 基础知识
+
 > 提示：本文档以`python2.7`版本为例
 
 ## 安装
@@ -65,6 +67,26 @@ help('modules')	                # 查看python所有模块
 help(object)                    # 查看对象的详细文档
 help(object.method)             # 查看对象的属性帮助信息
 dir([object])                   # 查看对象的属性
+```
+
+## virtualenv
+
+```bash
+# 安装
+pip install virtualenv
+
+# 创建环境
+mkdir myproject && cd myproject
+virtualenv --no-site-packages venv_name
+
+# 应用虚拟环境
+source ./venv_name/bin/activate
+
+# 安装库
+pip install jinja2
+
+# 退出
+deactivate
 ```
 
 ## 调试
