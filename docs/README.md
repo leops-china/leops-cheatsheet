@@ -2,14 +2,14 @@
 
 方便你我他，告别烦恼, 随用随拿。
 
-## cheatsheet
+## [cheatsheet](/cheatsheet/)
 
 整理了运维工程师常用的一些命令，方便查询记忆。
 
-## conf
+## [conf](/conf/)
 
 整理了运维工程师常用软件的一些配置
 
-## script
+## [scripts](/scripts/)
 
 整理了运维工程师常用的脚本实例

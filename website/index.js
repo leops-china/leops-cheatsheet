@@ -44,7 +44,6 @@ new Docute({
     'json',
     'markdown',
     'python',
-    'bat',
     'powershell',
     'yaml'
   ],
