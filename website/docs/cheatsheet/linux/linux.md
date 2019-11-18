@@ -33,6 +33,133 @@ tc qdisc del dev eth0 root netem loss 30%
 
 ```
 
+## systemd
+
+```bash
+# 查看系统信息
+systemctl list-dependencies                         # 显示服务的依赖关系
+systemctl list-dependencies --all nginx.service     # 显示nginx服务的依赖关系
+systemctl list-sockets                              # 列出运行的套接字
+systemctl list-sockets --all                        # 列出所有的套接字
+systemctl list-jobs                                 # 列出活动的jobs
+systemctl list-unit-files                           # 列出所有已安装服务
+
+systemctl list-units                        # 列出运行的单元
+systemctl list-units --all                  # 列出所有Unit，包括没有找到配置文件的或者启动失败的
+systemctl list-units --all --state=inactive # 列出所有没有运行的 Unit
+systemctl list-units --failed               # 列出所有加载失败的 Unit
+systemctl list-units --type=service         # 列出所有正在运行的、类型为 service 的 Unit
+
+systemctl get-default                       # 列出默认目标（如运行级别）
+
+# 操作服务
+systemctl stop service                        # 关闭运行的 service 服务
+systemctl start service                       # 启动 service 服务
+systemctl restart service                     # 重启运行的 service 服务
+systemctl kill service                        # 杀死 service 服务的所有子进程
+systemctl reload service                      # 重载 service 服务的配置文件
+systemctl daemon-reload                       # 重新载入 systemd, 扫描新的或有变动的服务
+systemctl status                              # 查看系统状态
+systemctl status service                      # 查看 service 服务的运行状态
+systemctl --failed                            # 显示运行失败的服务
+systemctl reset-failed                        # 重置任何服务的故障状态
+systemctl enable service                      # 开机自动启动服务
+systemctl disable service                     # 取消开机自动启动服务
+systemctl show service                        # 显示service（或其他服务）的属性
+systemctl show -p CPUShares service           # 显示service 服务的指定属性的值
+systemctl set-property service CPUShares=500  # 设置 service 服务的指定属性
+systemctl edit service                        # 编辑service配置文件
+systemctl edit --full service                 # 编辑service所有的配置文件
+systemctl -H host status network              # 远程运行systemctl命令
+
+systemctl is-active service              # 显示 service 服务是否正在运行
+systemctl is-failed application.service  # 显示 service 服务 是否处于启动失败状态
+systemctl is-enabled application.service # 显示 service 服务 服务是否建立了启动链接
+
+# 查看日志
+journalctl       # 查看所有日志（默认情况下 ，只保存本次启动的日志）
+journalctl -k    # 查看内核日志（不显示应用日志）
+journalctl -b    # 查看系统本次启动的日志
+journalctl -b -1 # 查看上一次启动的日志（需更改设置）
+
+## 查看指定时间的日志
+journalctl --since="2012-10-30 18:17:16"
+journalctl --since "20 min ago"
+journalctl --since yesterday
+journalctl --since "2015-01-10" --until "2015-01-11 03:00"
+journalctl --since 09:00 --until "1 hour ago"
+
+journalctl -n                       # 显示尾部的最新10行日志
+journalctl -n 20                    # 显示尾部指定行数的日志
+journalctl -f                       # 实时滚动显示最新日志
+journalctl /usr/lib/systemd/systemd # 查看指定服务的日志
+journalctl _PID=1                   # 查看指定进程的日志
+journalctl /usr/bin/bash            # 查看某个路径的脚本的日志
+journalctl _UID=33 --since today    # 查看指定用户的日志
+
+journalctl -u service                                        # 查看 service 服务的日志
+journalctl -u service --since today                          # 查看 service 服务的当天日志
+journalctl -u service -f                                     # 实时滚动显示 service 服务的最新日志
+journalctl -u nginx.service -u php-fpm.service --since today # 合并显示多个 Unit 的日志
+
+# 查看指定优先级（及其以上级别）的日志，共有8级
+# 0: emerg
+# 1: alert
+# 2: crit
+# 3: err
+# 4: warning
+# 5: notice
+# 6: info
+# 7: debug
+journalctl -p err -b
+journalctl --no-pager # 日志默认分页输出，--no-pager 改为正常的标准输出
+journalctl -b -u nginx.service -o json # 以 JSON 格式（单行）输出
+journalctl -b -u nginx.service -o json-pretty # 以 JSON 格式（多行）输出，可读性更好
+journalctl --disk-usage # 显示日志占据的硬盘空间
+journalctl --vacuum-size=1G # 指定日志文件占据的最大空间
+journalctl --vacuum-time=1years # 指定日志文件保存多久
+
+# 系统操作
+systemctl reboot       # 重启系统
+systemctl poweroff     # 关闭系统
+systemctl halt         # CPU停止工作
+systemctl suspend      # 暂停系统
+systemctl hibernate    # 让系统进入冬眠状态
+systemctl hybrid-sleep # 让系统进入交互式休眠状态
+systemctl rescue       # 启动进入救援状态（单用户状态）
+systemctl emergency    # 进入紧急模式
+systemctl default      # 返回默认目标(多用户)
+
+
+# 启动耗时
+systemd-analyze                            # 查看启动耗时                                                                                    
+systemd-analyze blame                      # 查看每个服务的启动耗时
+systemd-analyze critical-chain             # 显示瀑布状的启动过程流
+systemd-analyze critical-chain atd.service # 显示指定服务的启动流
+
+# 主机信息
+hostnamectl                    # 显示当前主机的信息
+hostnamectl set-hostname rhel7 # 设置主机名
+
+# 本地化设置
+localectl                            # 查看本地化设置
+localectl set-locale LANG=en_GB.utf8 # 设置本地化参数
+localectl set-keymap en_GB           # 设置本地化参数
+
+# 时区设置
+timedatectl                               # 查看当前时区设置
+timedatectl list-timezones                # 显示所有可用的时区                                                                                  
+timedatectl set-timezone America/New_York # 设置当前时区
+timedatectl set-time YYYY-MM-DD           # 设置年月日
+timedatectl set-time HH:MM:SS             # 设置时间
+
+
+# 登录用户
+loginctl list-sessions   # 列出当前session
+loginctl list-users      # 列出当前登录用户
+loginctl show-user user1 # 列出显示指定用户的信息
+```
+
 ## iptables
 
 ```bash

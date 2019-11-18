@@ -283,6 +283,15 @@ new Docute({
     '/conf/': {
       language: '配置',
       sidebar: [
+	    {
+          title: 'Linux',
+          children: [
+            {
+              title: 'Systemd',
+              link: '/conf/linux/systemd'
+            }
+          ]
+        },
         {
           title: 'Nginx',
           children: [
