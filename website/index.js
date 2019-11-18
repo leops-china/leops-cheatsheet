@@ -153,6 +153,10 @@ new Docute({
           link: '/cheatsheet/dev/yaml'
         },
         {
+          title: 'markdown',
+          link: '/cheatsheet/dev/markdown'
+        },
+        {
           title: 'vue',
           link: '/cheatsheet/dev/vue'
         },

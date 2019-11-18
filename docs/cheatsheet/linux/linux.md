@@ -199,3 +199,23 @@ cat file.json | jq 'reduce .[] as $item (0; . + $item.age)'
 ```bash
 diff -u old new | sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/"   # 颜色显示
 ```
+
+## scp
+
+```bash
+# Usage
+scp <options> source_path destination_path
+# 常用选项
+-r      # transfer directory 传输目录
+-v      # see the transfer details 传输细节
+-C      # copy files with compression 压缩传输
+-l 800  # limit bandwith with 800   限制传输带宽
+-p      # preserving the original attributes of the copied files 保持传输文件的属性
+-q      # hidden the output 隐藏输出 比较少用
+# 案例
+scp file user@host:/path/to/file # 远程拷贝文件到host主机
+scp -r /path/to/directory user@host:/path/to/directory # 远程拷贝目录到host主机
+scp user@host:/path/to/file /local/path  # 拷贝远程文件到本地
+scp -r user@host:/path/ /local/  # 拷贝远程目录到本地
+
+```
