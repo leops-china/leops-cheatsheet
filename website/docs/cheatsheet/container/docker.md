@@ -1,6 +1,101 @@
-# Docker-Cheat Sheet
+# Docker
 
 https://github.com/wsargent/docker-cheat-sheet/tree/master/zh-cn
+
+- [官方文档](https://docs.docker.com)
+
+## 安装
+
+### 脚本安装
+
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+bash get-docker.sh
+```
+
+### centos
+
+```bash
+curl -o /etc/yum.repos.d/docker-ce.repo https://mirrors.ustc.edu.cn/docker-ce/linux/centos/docker-ce.repo
+sed -i 's#download.docker.com#mirrors.ustc.edu.cn/docker-ce#g' /etc/yum.repos.d/docker-ce.repo
+yum -y install docker-ce bash-completion
+
+cp /usr/share/bash-completion/completions/docker /etc/bash_completion.d/
+curl -L https://raw.githubusercontent.com/docker/compose/1.24.1/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+
+mkdir  /etc/docker
+cat > /etc/docker/daemon.json <<EOF
+{
+    "data-root": "/var/lib/docker",
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m",
+        "max-file": "3"
+    },
+    "live-restore": true,
+    "max-concurrent-downloads": 10,
+    "max-concurrent-uploads": 10,
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ],
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "registry-mirrors": [
+        "https://docker.mirrors.ustc.edu.cn/"
+    ]
+}
+EOF
+systemctl enable --now docker
+
+# 删除
+yum autoremove docker-ce
+rm -rf /var/lib/docker
+```
+
+### debian
+
+```bash
+apt-get remove -y docker docker-engine docker.io containerd runc
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/debian/gpg | sudo apt-key add -
+add-apt-repository \
+   "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+apt-get update
+apt-get install -y docker-ce bash-completion
+curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+curl -L https://raw.githubusercontent.com/docker/compose/1.24.1/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+chmod +x /usr/local/bin/docker-compose
+cat > /etc/docker/daemon.json <<EOF
+{
+    "data-root": "/var/lib/docker",
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m",
+        "max-file": "3"
+    },
+    "live-restore": true,
+    "max-concurrent-downloads": 10,
+    "max-concurrent-uploads": 10,
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ],
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "registry-mirrors": [
+        "https://docker.mirrors.ustc.edu.cn/"
+    ]
+}
+EOF
+
+systemctl enable docker && systemctl restart docker
+
+# 删除
+apt-get purge docker-ce
+rm -rf /var/lib/docker
+```
 
 ## 编译镜像
 
@@ -136,7 +231,7 @@ cat ubuntu.tar | docker import - test/ubuntu:v1.0
 
 ## Dockerfile
 
-```bash
+```
 FROM             # 为其他指令设置基础镜像 (Base Image)。
 MAINTAINER       # 为生成的镜像设置作者字段。
 RUN              # 在当前镜像的基础上生成一个新层并执行命令。

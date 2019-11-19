@@ -283,12 +283,25 @@ new Docute({
     '/conf/': {
       language: '配置',
       sidebar: [
-	    {
+        {
           title: 'Linux',
           children: [
             {
               title: 'Systemd',
               link: '/conf/linux/systemd'
+            }
+          ]
+        },
+        {
+          title: '容器',
+          children: [
+            {
+              title: 'docker',
+              link: '/conf/container/docker'
+            },
+            {
+              title: 'docker-compose',
+              link: '/conf/container/docker-compose'
             }
           ]
         },
