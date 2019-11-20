@@ -43,6 +43,9 @@ After=network.target auditd.service
 ConditionPathExists=!/etc/ssh/sshd_not_to_be_run
 
 [Service]
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
 EnvironmentFile=-/etc/default/ssh
 ExecStartPre=/usr/sbin/sshd -t
 ExecStart=/usr/sbin/sshd -D $SSHD_OPTS

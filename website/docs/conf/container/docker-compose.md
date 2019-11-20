@@ -16,13 +16,6 @@ services:
       - '6379'
     networks:
       - frontend
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
 
   db:
     image: postgres:9.4
@@ -30,9 +23,6 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - backend
-    deploy:
-      placement:
-        constraints: [node.role == manager]
 
   vote:
     image: dockersamples/examplevotingapp_vote:before
@@ -42,13 +32,6 @@ services:
       - frontend
     depends_on:
       - redis
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-      restart_policy:
-        condition: on-failure
-
   result:
     image: dockersamples/examplevotingapp_result:before
     ports:
@@ -57,30 +40,12 @@ services:
       - backend
     depends_on:
       - db
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
 
   worker:
     image: dockersamples/examplevotingapp_worker
     networks:
       - frontend
       - backend
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels: [APP=VOTING]
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints: [node.role == manager]
 
   visualizer:
     image: dockersamples/visualizer:stable
@@ -89,9 +54,6 @@ services:
     stop_grace_period: 1m30s
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-    deploy:
-      placement:
-        constraints: [node.role == manager]
 
 networks:
   frontend:
@@ -129,18 +91,20 @@ services:
 
 参数
 
-- `context`
+- `context`   可以是 Dockerfile 的文件路径，也可以是到链接到 git 仓库的 url, 当提供的值是相对路径时，它被解析为相对于撰写文件的路径。 
+  
   ```yaml
   build:
   context: ./dir
   ```
-- `dockerfile`
+- `dockerfile`  指定 dockerfile 文件来构建，必须指定构建路径 
+  
   ```yaml
   build:
     context: .
     dockerfile: Dockerfile-alternate
   ```
-- `args`
+- `args`  添加构建参数，这些参数是仅在构建过程中可访问的环境变量,它和Dockerfile中ARG效果类似 
 
   ```yaml
   build:
@@ -156,7 +120,8 @@ services:
       - gitcommithash=cdc3b19
   ```
 
-- `cache_from`
+- `cache_from`   缓存解析镜像列表 
+  
   ```yaml
   build:
     context: .
@@ -164,7 +129,7 @@ services:
       - alpine:latest
       - corp/web_app:3.14
   ```
-- `LABELS`
+- `LABELS`  使用 Docker标签 将元数据添加到生成的镜像中 
 
   ```yaml
   build:
@@ -182,7 +147,7 @@ services:
       - "com.example.label-with-empty-value"
   ```
 
-- `SHM_SIZE`
+- `SHM_SIZE`  设置容器 /dev/shm 分区的大小，值为表示字节的整数值或表示字符的字符串 
 
   ```yaml
   build:
@@ -194,7 +159,7 @@ services:
     shm_size: 10000000
   ```
 
-- `TARGET`
+- `TARGET`  根据对应的 Dockerfile 构建指定 Stage 
 
   ```yaml
   build:
@@ -203,6 +168,8 @@ services:
   ```
 
 ## cap_add, cap_drop
+
+ 添加或删除容器功能 
 
 ```yaml
 cap_add:
@@ -215,13 +182,15 @@ cap_drop:
 
 ## cgroup_parent
 
+ 为容器指定可选的父cgroup 
+
 ```yaml
 cgroup_parent: m-executor-abcd
 ```
 
 ### command
 
-覆盖镜像的 command.
+ 覆盖容器启动后默认执行的命令 
 
 ```yaml
 command: bundle exec thin -p 3000
@@ -229,7 +198,7 @@ command: bundle exec thin -p 3000
 
 ### container_name
 
-自定义容器名称
+ 为自定义的容器指定一个名称，而不是使用默认的名称 
 
 ```yaml
 container_name: my-web-container
@@ -263,7 +232,7 @@ credential_spec:
 
 ## depends_on
 
-Express dependency between services, Service dependencies cause the following behaviors:
+服务之间的启动依赖关系，在依赖项启动后才能启动本容器
 
 ```yaml
 version: '3.7'
@@ -281,7 +250,7 @@ services:
 
 ## devices
 
-List of device mappings. Uses the same format as the --device docker client create option.
+ 设置映射列表，与 Docker 客户端的 –device 参数类似 
 
 ```yaml
 devices:
@@ -290,7 +259,7 @@ devices:
 
 ## dns
 
-Custom DNS servers. Can be a single value or a list.
+ 自定义 DNS 服务器，与 –dns 具有一样的用途，可以是单个值或列表 
 
 ```yaml
 dns: 8.8.8.8
@@ -301,7 +270,7 @@ dns:
 
 ## dns_search
 
-Custom DNS search domains. Can be a single value or a list.
+ 自定义 DNS 搜索域，可以是单个值或列表 
 
 ```yaml
 dns_search: example.com
@@ -312,7 +281,7 @@ dns_search:
 
 ## entrypoint
 
-Override the default entrypoint.
+定义接入点，覆盖 Dockerfile 中的定义 
 
 ```yaml
 entrypoint: /code/entrypoint.sh
@@ -329,11 +298,7 @@ entrypoint:
 
 ## env_file
 
-Add environment variables from a file. Can be a single value or a list.
-
-If you have specified a Compose file with `docker-compose -f FILE`, paths in `env_file` are relative to the directory that file is in.
-
-Environment variables declared in the [environment](https://docs.docker.com/compose/compose-file/#environment) section _override_ these values – this holds true even if those values are empty or undefined.
+从文件中添加环境变量。可以是单个值或是列表,如果已经用 docker-compose -f FILE 指定了 Compose 文件，那么 env_file 路径值为相对于该文件所在的目录, 但 environment 环境中的设置的变量会会覆盖这些值，无论这些值未定义还是为 None. 
 
 ```yaml
 env_file: .env
@@ -352,9 +317,8 @@ RACK_ENV=development
 
 ## environment
 
-Add environment variables. You can use either an array or a dictionary. Any boolean values; true, false, yes no, need to be enclosed in quotes to ensure they are not converted to True or False by the YML parser.
-
-Environment variables with only a key are resolved to their values on the machine Compose is running on, which can be helpful for secret or host-specific values.
+ 添加环境变量，可以使用数组或字典。与上面的 env_file 选项完全不同，反而和 arg 有几分类似，这个标签的作用是设置镜像变量，它可以保存变量到镜像里面，也就是说启动的容器也会包含这些变量设置，这是与 arg 最大的不同。
+一般 arg 标签的变量仅用在构建过程中。而 environment 和 Dockerfile 中的 ENV 指令一样会把变量一直保存在镜像、容器中，类似 docker run -e 的效果. 
 
 ```yaml
 environment:
@@ -369,7 +333,7 @@ environment:
 
 ## expose
 
-Expose ports without publishing them to the host machine - they’ll only be accessible to linked services. Only the internal port can be specified.
+暴露端口，但不映射到宿主机，只被连接的服务访问。这个标签与 Dockerfile 中的 EXPOSE 指令一样，用于指定暴露的端口，但是只是作为一种参考，实际上 docker-compose.yml 的端口映射还得 ports 这样的标签.
 
 ```
 expose:
@@ -379,7 +343,7 @@ expose:
 
 ## external_links
 
-Link to containers started outside this `docker-compose.yml` or even outside of Compose, especially for containers that provide shared or common services. `external_links` follow semantics similar to the legacy option `links` when specifying both the container name and the link alias (`CONTAINER:ALIAS`).
+ 链接到 docker-compose.yml 外部的容器，甚至 并非 Compose 项目文件管理的容器。参数格式跟 links 类似. 
 
 ```yaml
 external_links:
@@ -390,7 +354,7 @@ external_links:
 
 ## extra_hosts
 
-Add hostname mappings. Use the same values as the docker client `--add-host` parameter.
+ 添加主机名的标签，就是往 /etc/hosts 文件中添加一些记录，与 Docker 客户端 中的 –add-host 类似： 
 
 ```
 extra_hosts:
@@ -398,18 +362,9 @@ extra_hosts:
  - "otherhost:50.31.209.229"
 ```
 
-An entry with the ip address and hostname is created in `/etc/hosts` inside containers for this service, e.g:
-
-```none
-162.242.195.82  somehost
-50.31.209.229   otherhost
-```
-
 ## healthcheck
 
-> [Version 2.1 file format](https://docs.docker.com/compose/compose-file/compose-versioning/#version-21) and up.
-
-Configure a check that’s run to determine whether or not containers for this service are “healthy”. See the docs for the [HEALTHCHECK Dockerfile instruction](https://docs.docker.com/engine/reference/builder/#healthcheck) for details on how healthchecks work.
+用于检查测试服务使用的容器是否正常. 
 
 ```
 healthcheck:
@@ -419,7 +374,7 @@ healthcheck:
   retries: 3
   start_period: 40s
 ```
-
+禁用镜像的所有检查项目
 ```yaml
 healthcheck:
   disable: true
@@ -427,7 +382,7 @@ healthcheck:
 
 ## image
 
-Specify the image to start the container from. Can either be a repository/tag or a partial image ID.
+ 指定image的ID，这个image ID可以是本地也可以是远程的，如果本地不存在，compose会尝试pull下来。 
 
 ```yaml
 image: redis
@@ -439,9 +394,7 @@ image: a4bc65fd
 
 ## init
 
-> [Added in version 3.7 file format](https://docs.docker.com/compose/compose-file/compose-versioning/#version-37).
-
-Run an init inside the container that forwards signals and reaps processes. Set this option to `true` to enable this feature for the service.
+ 在容器内运行init，转发信号并重新获得进程。将此选项设置为true可为服务启用此功能。 
 
 ```
 version: "3.7"
@@ -457,9 +410,7 @@ Specify a container’s isolation technology. On Linux, the only supported value
 
 ## labels
 
-Add metadata to containers using [Docker labels](https://docs.docker.com/engine/userguide/labels-custom-metadata/). You can use either an array or a dictionary.
-
-It’s recommended that you use reverse-DNS notation to prevent your labels from conflicting with those used by other software.
+ 使用 Docker 标签将元数据添加到容器，可以使用数组或字典。与 Dockerfile 中的 LABELS 类似： 
 
 ```
 labels:
@@ -476,7 +427,7 @@ labels:
 
 > **Warning**: 是旧功能了，随时会被删除,请使用 network 网络
 
-Link to containers in another service. Either specify both the service name and a link alias (`SERVICE:ALIAS`), or just the service name.
+ 链接到其它服务的中的容器，可以指定服务名称也可以指定链接别名（SERVICE：ALIAS)，与 Docker 客户端的 –link 有一样效果，会连接到其它服务中的容器. 
 
 ```
 web:
@@ -488,7 +439,7 @@ web:
 
 ## logging
 
-Logging configuration for the service.
+ 配置日志服务 
 
 ```yaml
 logging:
@@ -508,7 +459,7 @@ driver: "none"
 
 ## network_mode
 
-Network mode. Use the same values as the docker client `--network` parameter, plus the special form `service:[service name]`.
+ 可以指定使用服务或者容器的网络模式，用法类似于 Docke 客户端的 –network 选项 
 
 ```yaml
 network_mode: "bridge"
@@ -520,7 +471,7 @@ network_mode: "container:[container name/id]"
 
 ## networks
 
-Networks to join, referencing entries under the
+ 加入指定网络 
 
 ```
 services:
@@ -532,13 +483,7 @@ services:
 
 ### ALIASES
 
-Aliases (alternative hostnames) for this service on the network. Other containers on the same network can use either the service name or this alias to connect to one of the service’s containers.
-
-Since `aliases` is network-scoped, the same service can have different aliases on different networks.
-
-> **Note**: A network-wide alias can be shared by multiple containers, and even by multiple services. If it is, then exactly which container the name resolves to is not guaranteed.
-
-The general format is shown here.
+ 同一网络上的其他容器可以使用服务器名称或别名来连接到其他服务的容器 
 
 ```yaml
 services:
@@ -553,7 +498,7 @@ services:
           - alias2
 ```
 
-In the example below, three services are provided (`web`, `worker`, and `db`), along with two networks (`new` and `legacy`). The `db` service is reachable at the hostname `db` or `database` on the `new` network, and at `db` or `mysql` on the `legacy` network.
+ 下面实例中，提供 web 、worker以及db 服务，伴随着两个网络 new 和 legacy 。相同的服务可以在不同的网络有不同的别名: 
 
 ```yaml
 version: '3.7'
@@ -586,13 +531,7 @@ networks:
 
 ### IPV4_ADDRESS, IPV6_ADDRESS
 
-Specify a static IP address for containers for this service when joining the network.
-
-The corresponding network configuration in the [top-level networks section](https://docs.docker.com/compose/compose-file/#network-configuration-reference) must have an `ipam` block with subnet configurations covering each static address.
-
-> If IPv6 addressing is desired, the [`enable_ipv6`](https://docs.docker.com/compose/compose-file/compose-file-v2/##enable_ipv6) option must be set, and you must use a [version 2.x Compose file](https://docs.docker.com/compose/compose-file/compose-file-v2/#ipv4_address-ipv6_address). _IPv6 options do not currently work in swarm mode_.
-
-An example:
+ 为服务的容器指定一个静态 IP 地址 
 
 ```yaml
 version: '3.7'
@@ -616,25 +555,23 @@ networks:
 
 ## pid
 
+ 将 PID 模式设置为主机 PID 模式，可以打开容器与主机操作系统之间的共享 PID 地址空间。使用此标志启动的容器可以访问和操作宿主机的其他容器，反之亦然。 
+
 ```yaml
 pid: 'host'
 ```
 
-Sets the PID mode to the host PID mode. This turns on sharing between container and the host operating system the PID address space. Containers launched with this flag can access and manipulate other containers in the bare-metal machine’s namespace and vice versa.
-
 ## ports
 
-Expose ports.
+ 映射容器端口到本地主机 
 
-> **Note**: Port mapping is incompatible with `network_mode: host`
+### SHORT 语法
 
-### SHORT SYNTAX
 
-Either specify both ports (`HOST:CONTAINER`), or just the container port (an ephemeral host port is chosen).
-
-> **Note**: When mapping ports in the `HOST:CONTAINER` format, you may experience erroneous results when using a container port lower than 60, because YAML parses numbers in the format `xx:yy` as a base-60 value. For this reason, we recommend always explicitly specifying your port mappings as strings.
 
 ```yaml
+# SHORT 语法 
+# 可以使用 HOST:CONTAINER 的方式指定端口，也可以指定容器端口（选择临时主机端口），宿主机会随机映射端口。 
 ports:
   - '3000'
   - '3000-3005'
@@ -644,26 +581,14 @@ ports:
   - '127.0.0.1:8001:8001'
   - '127.0.0.1:5000-5010:5000-5010'
   - '6060:6060/udp'
-```
 
-### LONG SYNTAX
-
-The long form syntax allows the configuration of additional fields that can’t be expressed in the short form.
-
-- `target`: the port inside the container
-- `published`: the publicly exposed port
-- `protocol`: the port protocol (`tcp` or `udp`)
-- `mode`: `host` for publishing a host port on each node, or `ingress` for a swarm mode port to be load balanced.
-
-```yaml
+# LONG 语法
 ports:
-  - target: 80
-    published: 8080
-    protocol: tcp
-    mode: host
+  - target: 80      # 容器内的端口
+    published: 8080 # 公开的端口
+    protocol: tcp   # 端口协议（tcp 或 udp）
+    mode: host      # 映射模式, 通过 host 用在每个节点还是哪个发布的主机端口或使用 ingress 用于集群模式端口进行平衡负载
 ```
-
-> **Note**: The long syntax is new in v3.2
 
 ## restart
 
@@ -776,13 +701,7 @@ Disables the user namespace for this service, if Docker daemon is configured wit
 
 ## volumes
 
-Mount host paths or named volumes, specified as sub-options to a service.
-
-You can mount a host path as part of a definition for a single service, and there is no need to define it in the top level `volumes` key.
-
-But, if you want to reuse a volume across multiple services, then define a named volume in the [top-level `volumes` key](https://docs.docker.com/compose/compose-file/#volume-configuration-reference). Use named volumes with [services, swarms, and stack files](https://docs.docker.com/compose/compose-file/#volumes-for-services-swarms-and-stack-files).
-
-> **Note**: The top-level [volumes](https://docs.docker.com/compose/compose-file/#volume-configuration-reference) key defines a named volume and references it from each service’s `volumes` list. This replaces `volumes_from` in earlier versions of the Compose file format. See [Use volumes](https://docs.docker.com/engine/admin/volumes/volumes/) and [Volume Plugins](https://docs.docker.com/engine/extend/plugins_volume/) for general information on volumes.
+ 挂载一个目录或者一个已存在的数据卷容器，可以直接使用 `HOST:CONTAINER` 这样的格式，或者使用 `HOST:CONTAINER:ro` 这样的格式，后者对于容器来说，数据卷是只读的，这样可以有效保护宿主机的文件系统。 
 
 ```yaml
 version: '3.7'
@@ -810,13 +729,9 @@ volumes:
   dbdata:
 ```
 
-> **Note**: See [Use volumes](https://docs.docker.com/engine/admin/volumes/volumes/) and [Volume Plugins](https://docs.docker.com/engine/extend/plugins_volume/) for general information on volumes.
+### SHORT 语法
 
-### SHORT SYNTAX
-
-Optionally specify a path on the host machine (`HOST:CONTAINER`), or an access mode (`HOST:CONTAINER:ro`).
-
-You can mount a relative path on the host, that expands relative to the directory of the Compose configuration file being used. Relative paths should always begin with `.` or `..`.
+ 可以选择在主机（HOST:CONTAINER）或访问模式（HOST:CONTAINER:ro）上指定路径。可以在主机上挂载相对路径，该路径相对于正在使用的 Compose 配置文件的目录进行扩展。相对路径应始终以 . 或 .. 开头 
 
 ```yaml
 volumes:
@@ -836,43 +751,19 @@ volumes:
   - datavolume:/var/lib/mysql
 ```
 
-### LONG SYNTAX
+### LONG 语法
 
 The long form syntax allows the configuration of additional fields that can’t be expressed in the short form.
 
-- `type`: the mount type `volume`, `bind`, `tmpfs` or `npipe`
-
-- `source`: the source of the mount, a path on the host for a bind mount, or the name of a volume defined in the [top-level `volumes` key](https://docs.docker.com/compose/compose-file/#volume-configuration-reference). Not applicable for a tmpfs mount.
-
-- `target`: the path in the container where the volume is mounted
-
-- `read_only`: flag to set the volume as read-only
-
-- ```
-  bind
-  ```
-
-  : configure additional bind options
-
-  - `propagation`: the propagation mode used for the bind
-
-- ```
-  volume
-  ```
-
-  : configure additional volume options
-
-  - `nocopy`: flag to disable copying of data from a container when a volume is created
-
-- ```
-  tmpfs
-  ```
-
-  : configure additional tmpfs options
-
-  - `size`: the size for the tmpfs mount in bytes
-
-- `consistency`: the consistency requirements of the mount, one of `consistent` (host and container have identical view), `cached` (read cache, host view is authoritative) or `delegated` (read-write cache, container’s view is authoritative)
+- `type`：安装类型，可以为 volume、bind 或 tmpfs
+- `source`：安装源，主机上用于绑定安装的路径或定义在顶级 volumes密钥中卷的名称 ,不适用于 tmpfs 类型安装。
+- `target`：卷安装在容器中的路径
+- `read_only`：标志将卷设置为只读
+- `bind`：配置额外的绑定选项
+- `propagation`：用于绑定的传播模式
+- `volume`：配置额外的音量选项
+- `nocopy`：创建卷时禁止从容器复制数据的标志
+- `tmpfs`：配置额外的 tmpfs 选项
 
 ```yaml
 version: '3.7'
@@ -898,74 +789,23 @@ volumes:
   mydata:
 ```
 
-> **Note**: The long syntax is new in v3.2
 
-### VOLUMES FOR SERVICES, SWARMS, AND STACK FILES
-
-When working with services, swarms, and `docker-stack.yml` files, keep in mind that the tasks (containers) backing a service can be deployed on any node in a swarm, and this may be a different node each time the service is updated.
-
-In the absence of having named volumes with specified sources, Docker creates an anonymous volume for each task backing a service. Anonymous volumes do not persist after the associated containers are removed.
-
-If you want your data to persist, use a named volume and a volume driver that is multi-host aware, so that the data is accessible from any node. Or, set constraints on the service so that its tasks are deployed on a node that has the volume present.
-
-As an example, the `docker-stack.yml` file for the [votingapp sample in Docker Labs](https://github.com/docker/labs/blob/master/beginner/chapters/votingapp.md) defines a service called `db` that runs a `postgres` database. It is configured as a named volume to persist the data on the swarm, _and_ is constrained to run only on `manager` nodes. Here is the relevant snip-it from that file:
-
-```yaml
-version: '3.7'
-services:
-  db:
-    image: postgres:9.4
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-```
-
-### CACHING OPTIONS FOR VOLUME MOUNTS (DOCKER DESKTOP FOR MAC)
-
-On Docker 17.04 CE Edge and up, including 17.06 CE Edge and Stable, you can configure container-and-host consistency requirements for bind-mounted directories in Compose files to allow for better performance on read/write of volume mounts. These options address issues specific to `osxfs` file sharing, and therefore are only applicable on Docker Desktop for Mac.
-
-The flags are:
-
-- `consistent`: Full consistency. The container runtime and the host maintain an identical view of the mount at all times. This is the default.
-- `cached`: The host’s view of the mount is authoritative. There may be delays before updates made on the host are visible within a container.
-- `delegated`: The container runtime’s view of the mount is authoritative. There may be delays before updates made in a container are visible on the host.
-
-Here is an example of configuring a volume as `cached`:
-
-```yaml
-version: '3.7'
-services:
-  php:
-    image: php:7.1-fpm
-    ports:
-      - '9000'
-    volumes:
-      - .:/var/www/project:cached
-```
-
-Full detail on these flags, the problems they solve, and their `docker run` counterparts is in the Docker Desktop for Mac topic [Performance tuning for volume mounts (shared filesystems)](https://docs.docker.com/docker-for-mac/osxfs-caching/).
 
 ## 其他
 
-Each of these is a single value, analogous to its [docker run](https://docs.docker.com/engine/reference/run/) counterpart. Note that `mac_address` is a legacy option.
-
 ```yaml
-user: postgresql
-working_dir: /code
+user: postgresql              # 指定运行用户
+working_dir: /code            # 工作目录
 
-domainname: foo.com
-hostname: foo
-ipc: host
-mac_address: 02:42:ac:11:65:43
+domainname: foo.com            # 搜索域
+hostname: foo                  # 主机名称
+ipc: host                      # IPC模式
+mac_address: 02:42:ac:11:65:43 # mac地址
 
-privileged: true
+privileged: true               # 赋予此容器扩展的特权   
 
-read_only: true
-shm_size: 64M
+read_only: true                # 将容器的根文件系统挂载为只读
+shm_size: 64M                  # 设置 /dev/shm 的大小
 stdin_open: true
-tty: true
+tty: true                      # 分配伪TTY
 ```

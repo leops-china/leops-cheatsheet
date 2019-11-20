@@ -404,6 +404,67 @@ ansible 的ssh登陆属于交互式的非登陆shell
   when: not file_result.stat.exists
 ```
 
+## 不显示失败内容
+
+在执行 task 时，有些时候不希望模块报出`fatal`的错误信息，这时候我们可以使用`failed_when`关键字使 task 永不失败,在使用`register`关键字记录模块的信息，便于后续任务使用. `changed_when` 是永不改变，`no_log` 是不记录日志。
+
+```yaml
+- name: 检查主机连接状态
+  wait_for_connection:
+    connect_timeout: 1
+    timeout: 3
+  register: host_status
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: 结束运行连接失败的主机
+  meta: end_host
+  when: host_status.msg is defined and host_status.msg is search('SSH Error')
+```
+
+## 实现 try catch 功能
+
+block 中的任务正常执行，如果有任何错误，则该 rescue 部分将执行。always 无论 block 和 rescue 部分中以前发生过或没有发生过什么错误，该部分都将运行。
+
+```yaml
+- name: 捕捉错误
+  block:
+    - debug:
+        msg: '正常执行'
+    - name: 强行错误
+      command: /bin/false
+    - debug:
+        msg: '由于上述任务失败，从不执行'
+  rescue:
+    - debug:
+        msg: '发现一个错误'
+    - name: 在恢复过程中强行失败
+      command: /bin/false
+    - debug:
+        msg: '恢复过程中发生错误时,也从不执行'
+  always:
+    - debug:
+        msg: "总是执行"
+
+# 使用handlers
+ tasks:
+   - name: 尝试并优雅地回滚
+     block:
+       - debug:
+           msg: '正常执行'
+         changed_when: yes
+         notify: 即使发生错误时也执行
+       - command: /bin/false
+     rescue:
+       - name: 确保所有task都运行
+         meta: flush_handlers
+ handlers:
+    - name:  即使发生错误时也执行
+      debug:
+        msg: '该task在错误时运行'
+```
+
 > 下列是 `本末` 提供的
 
 ## 在 shell 模块中使用脚本写法与 jinja2

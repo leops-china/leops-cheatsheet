@@ -1,88 +1,87 @@
 # docker 配置文件
 
-
 ## linux 的配置
 
 配置文件路径: `/etc/docker/daemon.json`
 
-```
+```json
 {
-	"authorization-plugins": [],
-	"data-root": "",
-	"dns": [],
-	"dns-opts": [],
-	"dns-search": [],
-	"exec-opts": [],
-	"exec-root": "",
-	"experimental": false,
-	"features": {},
-	"storage-driver": "",
-	"storage-opts": [],
-	"labels": [],
-	"live-restore": true,
-	"log-driver": "json-file",
-	"log-opts": {
+	"authorization-plugins": [], // 访问授权插件
+	"data-root": "",             // docker数据持久化存储的根目录
+	"dns": [],                   // DNS服务器
+	"dns-opts": [],              // DNS配置选项，如端口等
+	"dns-search": [],            // DNS搜索域名
+	"exec-opts": [],             // 执行选项
+	"exec-root": "",             // 执行状态的文件的根目录
+	"experimental": false,       // 是否开启试验性特性
+	"features": {},              // 启用或禁用特定功能。如：{"buildkit": true}使buildkit成为默认的docker镜像构建器。
+	"storage-driver": "",        // 存储驱动器
+	"storage-opts": [],          // 存储选项
+	"labels": [],                // 键值对式标记docker元数据
+	"live-restore": true,        // dockerd挂掉是否保活容器（避免了docker服务异常而造成容器退出）
+	"log-driver": "json-file",   // 容器日志的驱动器
+	"log-opts": {                // 容器日志的选项
 		"max-size": "10m",
 		"max-file":"5",
 		"labels": "somelabel",
 		"env": "os,customer"
 	},
-	"mtu": 0,
-	"pidfile": "",
-	"cluster-store": "",
-	"cluster-store-opts": {},
-	"cluster-advertise": "",
-	"max-concurrent-downloads": 3,
-	"max-concurrent-uploads": 5,
-	"default-shm-size": "64M",
-	"shutdown-timeout": 15,
-	"debug": true,
-	"hosts": [],
-	"log-level": "",
-	"tls": true,
-	"tlsverify": true,
-	"tlscacert": "",
-	"tlscert": "",
-	"tlskey": "",
-	"swarm-default-advertise-addr": "",
-	"api-cors-header": "",
-	"selinux-enabled": false,
-	"userns-remap": "",
-	"group": "",
-	"cgroup-parent": "",
-	"default-ulimits": {
+	"mtu": 0,                   // 设置容器网络MTU（最大传输单元）
+	"pidfile": "",              // daemon PID文件的位置
+	"cluster-store": "",        // 集群存储系统的URL
+	"cluster-store-opts": {},   // 配置集群存储
+	"cluster-advertise": "",    // 对外的地址名称
+	"max-concurrent-downloads": 3, // 设置每个pull进程的最大并发
+	"max-concurrent-uploads": 5,   // 设置每个push进程的最大并发
+	"default-shm-size": "64M",     // 设置默认共享内存的大小
+	"shutdown-timeout": 15,        // 设置关闭的超时时限
+	"debug": true,                 // 开启调试模式
+	"hosts": [],                   // 监听地址
+	"log-level": "",               // 日志级别
+	"tls": true,                   // 开启传输层安全协议TLS
+	"tlsverify": true,             // 开启输层安全协议并验证远程地址
+	"tlscacert": "",               // CA签名文件路径
+	"tlscert": "",                 // TLS证书文件路径
+	"tlskey": "",                  // TLS密钥文件路径
+	"swarm-default-advertise-addr": "",  // swarm对外地址
+	"api-cors-header": "",               // 设置CORS（跨域资源共享-Cross-origin resource sharing）头
+	"selinux-enabled": false,            // 开启selinux(用户、进程、应用、文件的强制访问控制)
+	"userns-remap": "",                  // 给用户命名空间设置 用户/组
+	"group": "",                         // docker所在组
+	"cgroup-parent": "",                 // 设置所有容器的cgroup的父类
+	"default-ulimits": {                 // 设置所有容器默认的ulimit
 		"nofile": {
 			"Name": "nofile",
 			"Hard": 64000,
 			"Soft": 64000
 		}
 	},
-	"init": false,
-	"init-path": "/usr/libexec/docker-init",
-	"ipv6": false,
-	"iptables": false,
-	"ip-forward": false,
-	"ip-masq": false,
-	"userland-proxy": false,
-	"userland-proxy-path": "/usr/libexec/docker-proxy",
-	"ip": "0.0.0.0",
-	"bridge": "",
-	"bip": "",
-	"fixed-cidr": "",
-	"fixed-cidr-v6": "",
-	"default-gateway": "",
-	"default-gateway-v6": "",
-	"icc": false,
-	"raw-logs": false,
-	"allow-nondistributable-artifacts": [],
-	"registry-mirrors": [],
-	"seccomp-profile": "",
-	"insecure-registries": [],
-	"no-new-privileges": false,
-	"default-runtime": "runc",
-	"oom-score-adjust": -500,
-	"node-generic-resources": ["NVIDIA-GPU=UUID1", "NVIDIA-GPU=UUID2"],
-	"runtimes": {
+	"init": false,                            // 容器执行初始化，来转发信号或控制(reap)进程
+	"init-path": "/usr/libexec/docker-init",  // docker-init文件的路径
+	"ipv6": false,                            // 开启IPV6网络
+	"iptables": false,                        // 开启防火墙规则
+	"ip-forward": false,                      // 开启net.ipv4.ip_forward
+	"ip-masq": false,                         // 开启ip掩蔽(IP封包通过路由器或防火墙时重写源IP地址或目的IP地址的技术)
+	"userland-proxy": false,                             // 用户空间代理
+	"userland-proxy-path": "/usr/libexec/docker-proxy",  // 用户空间代理路径
+	"ip": "0.0.0.0",                         // 默认IP
+	"bridge": "",                            // 将容器依附(attach)到桥接网络上的桥标识
+	"bip": "",                               // 指定桥接ip
+	"fixed-cidr": "",                        // (ipv4)子网划分，即限制ip地址分配范围，用以控制容器所属网段实现容器间(同一主机或不同主机间)的网络访问
+  "fixed-cidr-v6": "",                     //（ipv6）子网划分
+	"default-gateway": "",                   // 默认网关
+	"default-gateway-v6": "",                // 默认ipv6网关
+	"icc": false,                            // 容器间通信
+	"raw-logs": false,                       // 原始日志(无颜色、全时间戳)
+	"allow-nondistributable-artifacts": [],  // 不对外分发的产品提交的registry仓库
+	"registry-mirrors": [],                  // registry仓库镜像
+	"seccomp-profile": "",                   // seccomp配置文件
+	"insecure-registries": [],               // 非https的registry地址
+	"no-new-privileges": false,              // 禁止新优先级
+	"default-runtime": "runc",               // OCI联盟(The Open Container Initiative)默认运行时环境
+	"oom-score-adjust": -500,                // 内存溢出被杀死的优先级(-1000~1000)
+	"node-generic-resources": ["NVIDIA-GPU=UUID1", "NVIDIA-GPU=UUID2"], // 对外公布的资源节点
+	"runtimes": {           // 运行时
 		"cc-runtime": {
 			"path": "/usr/bin/cc-runtime"
 		},
@@ -93,10 +92,42 @@
 			]
 		}
 	},
-	"default-address-pools":[
+	"default-address-pools":[               // 设置本地节点网络的默认地址池
 		{"base":"172.80.0.0/16","size":24},
 		{"base":"172.90.0.0/16","size":24}
 	]
+```
+
+常用配置
+
+```json
+{
+  "data-root": "/var/lib/docker",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  },
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 65535,
+      "Soft": 65535
+    },
+    "nproc": {
+      "Name": "nproc",
+      "Hard": 65535,
+      "Soft": 65535
+    }
+  },
+  "live-restore": true,
+  "max-concurrent-downloads": 10,
+  "max-concurrent-uploads": 10,
+  "storage-driver": "overlay2",
+  "storage-opts": ["overlay2.override_kernel_check=true"],
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn/"]
+}
 ```
 
 ## windows 的配置

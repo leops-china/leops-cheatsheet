@@ -209,13 +209,13 @@ docker network create -d bridge my-net 新建网络
 
 ```
 
-## 进入容器：
+## 进入容器
 
 ```
 docker exec -it centos /bin/bash
 ```
 
-## 启动/停止容器：
+## 启动/停止容器
 
 ```
 docker start CONTAINER ID
@@ -227,25 +227,4 @@ docker stop CONTAINER ID
 ```
 docker export 7691a814370e > ubuntu.tar
 cat ubuntu.tar | docker import - test/ubuntu:v1.0
-```
-
-## Dockerfile
-
-```
-FROM             # 为其他指令设置基础镜像 (Base Image)。
-MAINTAINER       # 为生成的镜像设置作者字段。
-RUN              # 在当前镜像的基础上生成一个新层并执行命令。
-CMD              # 设置容器默认执行命令。
-EXPOSE           # 告知 Docker 容器在运行时所要监听的网络端口。注意：并没有实际上将端口设置为可访问。
-ENV              # 设置环境变量。
-ADD              # 将文件、目录或远程文件复制到容器中。缓存无效。请尽量用 COPY 代替 ADD。
-COPY             # 将文件或文件夹复制到容器中。注意：将使用 ROOT 用户复制文件，故无论 USER / WORKDIR 指令如何配置，你都需要手动修改其所有者（chown），ADD 也是一样。
-ENTRYPOINT       # 将容器设为可执行的。
-VOLUME           # 在容器内部创建挂载点 (mount point) 指向外部挂载的卷标或其他容器。
-USER             # 设置随后执行 RUN / CMD / ENTRYPOINT 命令的用户名。
-WORKDIR          # 设置工作目录 (working directory)。
-ARG              # 定义编译时 (build-time) 变量。
-ONBUILD          # 添加触发指令，当该镜像被作为其他镜像的基础镜像时该指令会被触发。
-STOPSIGNAL       # 设置停止容器时，向容器内发送的系统调用信号 (system call signal)。
-LABEL            # 将键值对元数据 (key/value metadata) 应用到镜像、容器或是守护进程。
 ```

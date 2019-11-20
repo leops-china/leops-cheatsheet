@@ -222,6 +222,10 @@ new Docute({
           title: 'docker',
           link: '/cheatsheet/container/docker'
         },
+		{
+          title: 'dockerfile',
+          link: '/cheatsheet/container/dockerfile'
+        },
         {
           title: 'docker-compose',
           link: '/cheatsheet/container/docker-compose'
