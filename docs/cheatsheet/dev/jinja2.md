@@ -1,19 +1,136 @@
 # jinja2
 
-## 基本
-
-- 数学运算 +, -, \*, /, \*\*, //, %等数学运算符都支持.
-- 逻辑运算 and, or, not 也同样支持
-- in 判断元素是否在集合中
-- | 管道操作符, 默认使用 Apply 调用一个方法
-- ~ 字符串连接
-- () 调用可调用对象
-- . 和 [ ]获取属性
-- 三元操作: value1 if expression else value2 支持
+Jinja2 是一个 Python 的功能齐全的模板引擎。它有完整的 unicode 支持，一个可选 的集成沙箱执行环境，被广泛使用，以 BSD 许可证授权。
 
 
 
-## 内建 filter: 
+- [官方](https://palletsprojects.com/p/jinja/)
+- [官方文档](https://jinja.palletsprojects.com/)
+- [github](https://github.com/pallets/jinja)
+- [中文文档](http://docs.jinkan.org/docs/jinja2/)
+
+##  安装
+
+```bash
+easy_install Jinja2
+
+pip install Jinja2
+```
+
+
+
+## 简单使用
+
+```python
+from jinja2 import Template
+
+template = Template('Hello {{ name }}!')
+template.render(name='John Doe')
+# 'Hello John Doe!'
+
+# 使用文件
+import os
+from jinja2 import FileSystemLoader, Environment
+current_path = os.path.dirname(os.path.abspath(__file__))
+template_path = os.path.join(current_path, 'templates')
+template_file = 'report.html'
+
+TemplateLoader = FileSystemLoader(searchpath=template_path)
+TemplateEnv = Environment(loader=TemplateLoader)
+template = TemplateEnv.get_template(template_file)
+html = template.render(data=check_result)
+```
+
+
+
+## 模板语法
+
+模板仅仅是文本文件。它可以生成任何基于文本的格式（HTML、XML、CSV、LaTex 等等）。 它并没有特定的扩展名， .html 或 .xml 都是可以的。
+
+
+
+## 表达式
+
+**字面量**
+
+- 'Hello World' / "Hello World" : 双引号或单引号中间的一切都是字符串。
+- 42 :  整数。
+- 42.23 : 有小数点，就是浮点数。
+- ['list', 'of', 'objects']： 一对中括号括起来的东西是一个列表。
+- (‘tuple’, ‘of’, ‘values’)： 元组， 不能被修改
+- {‘dict’: ‘of’, ‘key’: ‘and’, ‘value’: ‘pairs’} :  字典，键必须是唯一的。
+- true / false ： 布尔值
+
+**算术**
+
+- `+` 把两个对象加到一起。通常对象是素质，但是如果两者是字符串或列表，你可以用这 种方式来衔接它们。无论如何这不是首选的连接字符串的方式！连接字符串见 `~` 运算符。 `{{ 1 + 1 }}` 等于 `2` 。
+- `-`  用第一个数减去第二个数。 `{{ 3 - 2 }}` 等于 `1` 。
+
+- `/` 对两个数做除法。返回值会是一个浮点数。 `{{ 1 / 2 }}` 等于 `{{ 0.5 }}` 。
+
+- `// `对两个数做除法，返回整数商。 `{{ 20 // 7 }}` 等于 `2` 。
+
+- `% `计算整数除法的余数。 `{{ 11 % 7 }}` 等于 `4` 。
+- `* `用右边的数乘左边的操作数。 `{{ 2 * 2 }}` 会返回 `4` 。也可以用于重 复一个字符串多次。 `{{ ‘=’ * 80 }}` 会打印 80 个等号的横条。
+- `** `取左操作数的右操作数次幂。 `{{ 2**3 }}` 会返回 `8` 。
+
+**比较**
+
+- `==` 比较两个对象是否相等。
+- `!=` 比较两个对象是否不等。
+
+- `>` 如果左边大于右边，返回 true 。
+- `>=` 如果左边大于等于右边，返回 true 。
+
+- `<` 如果左边小于右边，返回 true 。
+- `<=` 如果左边小于等于右边，返回 true 。
+
+**逻辑**
+
+对于 if 语句，在 for 过滤或 if 表达式中，它可以用于联合多个表达式:
+
+- `and` 如果左操作数和右操作数同为真，返回 true 。
+- `or` 如果左操作数和右操作数有一个为真，返回 true 。
+- `not` 对一个表达式取反（见下）。
+- `(expr)` 表达式组。
+
+提示
+
+`is` 和 `in` 运算符同样支持使用中缀记法: `foo is not bar` 和 `foo not in bar` 而不是 `not foois bar` 和 `not foo in bar` 。所有的 其它表达式需要前缀记法 `not (foo and bar)` 。
+
+**其它运算符**
+
+下面的运算符非常有用，但不适用于其它的两个分类:
+
+- `in` 运行序列/映射包含检查。如果左操作数包含于右操作数，返回 true 。比如 `{{ 1 in[1,2,3] }}` 会返回 true 。
+- `is` 运行一个 [*测试*](#测试) 。
+- `|` 应用一个 [*过滤器*](#过滤器) 。
+
+- `~` 把所有的操作数转换为字符串，并且连接它们。 `{{ "Hello " ~ name ~ "!" }}` 会返回（假设 name 值为 `''John'` ） `Hello John!` 。
+- `()` 调用一个可调用量:`{{ post.render() }}` 。在圆括号中，你可以像在 python 中一样使用位置参数和关键字参数: `{{ post.render(user, full=true) }}` 。
+- `.` / `[]` 获取一个对象的属性。
+
+
+
+### 变量
+
+```jinja2
+{{ foo }}
+{{ foo.bar }}
+{{ foo['bar'] }}
+```
+
+
+
+### 过滤器
+
+过滤器与变量用管道符号（ | ）分割
+
+```jinja2
+ {{ name|striptags|title }} 
+```
+
+**内建 filter:** 
 
 > 对于内建 filter 的别名, 可以在 jinja2 的 filters.py 文件中查找
 
@@ -54,10 +171,23 @@
 - upper(string) 把接受到的字符串转成大写
 - urlize(value, trim_url_limit = None, nofollow = False): 接 受一个 url, 转换成一个<a>标签表示的 link, 这个 link 的 href 为传入的 url, innerText 是 url 截取前 trim_url_limit 个字符, nofollow 设置为 true 时, 会为这个 link 加入一个属性 rel='nofollow'
 - wordcount(string): 计算 string 中的单词数
-- wordwrap(string, width = 79, break_long_words = True): 返 回经过包装的 width 指定宽度的字符, 也就是说每读取 width 个字符就会换行. , break_long_words 表明在获取到 width 个字 符之后, 如果一个单词还没有结束, 是否截断单词, False 将不会截断
+- wordwrap(string, width = 79, break_long_words = True): 返 回经过包装的 width 指定宽度的字符, 也就是说每读取 width 个字符就会换行., break_long_words 表明在获取到 width 个字 符之后, 如果一个单词还没有结束, 是否截断单词, False 将不会截断
 - xmlattr(d, autospace = True): 通过接受一个字典, 创建一个 SGML/XML 属性列表
 
-## 内建测试
+## 测试
+
+```jinja2
+{% if loop.index is divisibleby 3 %}
+{% if loop.index is divisibleby(3) %}
+
+{% if variable is defined %}
+    value of variable: {{ variable }}
+{% else %}
+    variable is not defined
+{% endif %}
+```
+
+**内建测试**
 
 - callable(object): 测试一个对象是否是可调用对象
 - defined(value): 测试传入的对象是否已经定义了
@@ -75,52 +205,477 @@
 - undefined(value): 检查一个对象是否未定义
 - upper(value): 检查一个字符串是否全部大写
 
-## 全局函数:
 
-range([start, ]stop[, step]):
+
+## 注释
+
+```jinja2
+## 注释
+
+{# note: disabled template because we no longer use this
+    {% for user in users %}
+        ...
+    {% endfor %}
+#}
+```
+
+
+
+## 空白控制
+
+```jinja2
+## 开始或结束放置一个减号（ - ），可以移除块前或块后的空白
+{% for item in seq -%}
+    {{ item }}
+{%- endfor %}
+
+{%- if foo -%}...{% endif %}
+```
+
+
+
+## 转义
+
+```jinja2
+## 使用变量表达式
+{{ '{{' }}
+
+
+## 使用raw
+{% raw %}
+    <ul>
+    {% for item in seq %}
+        <li>{{ item }}</li>
+    {% endfor %}
+    </ul>
+{% endraw %}
+
+## html 转义
+{{ user.username | e }}
+
+# autoescape
+{% autoescape true %}
+    Autoescaping is active within this block
+{% endautoescape %}
+
+{% autoescape false %}
+    Autoescaping is inactive within this block
+{% endautoescape %}
 
 ```
-{% for i in range(10) %}
-{{ i }}
+
+
+
+## 行语句
+
+```jinja2
+## 行语句前缀配置为 #
+# for item in seq
+    <li>{{ item }}</li>
+# endfor
+
+# for href, caption in [('index.html', 'Index'),
+                        ('about.html', 'About')]:
+    <li><a href="{{ href }}">{{ caption }}</a></li>
+# endfor
+```
+
+
+
+## 模板继承
+
+```jinja2
+## base.html
+{% block head %}
+    <link rel="stylesheet" href="style.css" />
+    <title>{% block title %}{% endblock %} - My Webpage</title>
+{% endblock %}
+
+
+## child.html
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+
+
+## 调用 super 来渲染父级块的内容。这会返回父级块的结果
+{% block sidebar %}
+    <h3>Table Of Contents</h3>
+    ...
+    {{ super() }}
+{% endblock %}
+
+## 命名块结束标签
+{% block sidebar %}
+    {% block inner_sidebar %}
+        ...
+    {% endblock inner_sidebar %}
+{% endblock sidebar %}
+
+## 显式地指定在块中可用的变量
+{% for item in seq %}
+    <li>{% block loop_item scoped %}{{ item }}{% endblock %}</li>
 {% endfor %}
 ```
 
-lipsum(n = 5, html = True, min = 20, max = 100): 不知道用途
 
-dict(\*\*items) 根据传入的关键字参数构造一个字典对象.
 
-for
+## 控制结构
 
-循环打印一个序列，例如：
+**For**
 
-```
+```jinja2
+## list
+<ul>
 {% for user in users %}
-<li>{{ user.username|e }}</li>
+  <li>{{ user.username|e }}</li>
 {% endfor %}
 </ul>
-```
-在循环内部，你可以访问一些特殊的变量
 
-Variable Description
-- loop.index 当 前迭代的索引，从 1 开始算
-- loop.index0 当前迭代的索引，从 0 开始算
-- loop.revindex 相 对于序列末尾的索引，从 1 开始算
-- loop.revindex0 相对于序列末尾的索引，从 0 开始算
-- loop.first 相 当于 loop.index == 1.
-- loop.last 相当于 loop.index == len(seq) - 1
-- loop.length 序列的长度.
-- loop.cycle 是 一个帮助性质的函数，可以接受两个字符串参数，如果当前循环索引是偶数，则显示第一个字符串，是奇数则显示第二个字符串。它常被在表格中用来用不同的背景 色区分相邻的行。
-- 设置变量值 {% set variable_name = value %}
+## dict
+<dl>
+{% for key, value in my_dict.iteritems() %}
+    <dt>{{ key|e }}</dt>
+    <dd>{{ value|e }}</dd>
+{% endfor %}
+</dl>
+
+## continue
+{% for user in users %}
+    {%- if loop.index is even %}{% continue %}{% endif %}
+    ...
+{% endfor %}
+
+## break
+{% for user in users %}
+    {%- if loop.index >= 10 %}{% break %}{% endif %}
+{%- endfor %}
+
+## else
+<ul>
+{% for user in users %}
+    <li>{{ user.username|e }}</li>
+{% else %}
+    <li><em>no users found</em></li>
+{% endfor %}
+</ul>
+
+## 递归
+<ul class="sitemap">
+{%- for item in sitemap recursive %}
+    <li><a href="{{ item.href|e }}">{{ item.title }}</a>
+    {%- if item.children -%}
+        <ul class="submenu">{{ loop(item.children) }}</ul>
+    {%- endif %}</li>
+{%- endfor %}
+</ul>
+
+## 辅助函数
+{% for row in rows %}
+    <li class="{{ loop.cycle('odd', 'even') }}">{{ row }}</li>
+{% endfor %}
+```
+
+for循环的特殊变量
+
+| 变量               | 描述                                               |
+| :----------------- | :------------------------------------------------- |
+| loop.index         | 当前循环迭代的次数（从 1 开始）                    |
+| loop.index0        | 当前循环迭代的次数（从 0 开始）                    |
+| loop.revindex      | 到循环结束需要迭代的次数（从 1 开始）              |
+| loop.revindex0     | 到循环结束需要迭代的次数（从 0 开始）              |
+| loop.first         | 如果是第一次迭代，为 True 。                       |
+| loop.last          | 如果是最后一次迭代，为 True 。                     |
+| loop.length        | 序列中的项目数。                                   |
+| loop.cycle         | 在一串序列间期取值的辅助函数                       |
+| loop.depth         | 指示当前渲染在递归循环中的深度。 从1开始           |
+| loop.depth0        | 指示当前渲染在递归循环中的深度。 从0开始           |
+| loop.previtem      | 循环的上一个迭代中的项目。 在第一次迭代中未定义。  |
+| loop.nextitem      | 循环的以下迭代中的项目。 在上一次迭代期间未定义。  |
+| loop.changed(*val) | 如果以前使用其他值调用（或根本未调用），则为true。 |
+
+**IF**
+
+```jinja2
+{% if users %}
+<ul>
+{% for user in users %}
+    <li>{{ user.username|e }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+
+{% if kenny.sick %}
+    Kenny is sick.
+{% elif kenny.dead %}
+    You killed Kenny!  You bastard!!!
+{% else %}
+    Kenny looks okay --- so far
+{% endif %}
+
+## 表达式
+{{ '[%s]' % page.title if page.title }}
+```
 
 ## 宏
 
+```jinja2
+## 定义宏
+{% macro input(name, value='', type='text', size=20) -%}
+    <input type="{{ type }}" name="{{ name }}" value="{{
+        value|e }}" size="{{ size }}">
+{%- endmacro %}
+
+## 使用
+<p>{{ input('username') }}</p>
+<p>{{ input('password', type='password') }}</p>
+
+## call
+{% macro render_dialog(title, class='dialog') -%}
+    <div class="{{ class }}">
+        <h2>{{ title }}</h2>
+        <div class="contents">
+            {{ caller() }}
+        </div>
+    </div>
+{%- endmacro %}
+
+{% call render_dialog('Hello World') %}
+    This is a simple dialog rendered by using a macro and
+    a call block.
+{% endcall %}
+
+## 导入
+{% import 'forms.html' as forms %}
+<dl>
+    <dt>Username</dt>
+    <dd>{{ forms.input('username') }}</dd>
+    <dt>Password</dt>
+    <dd>{{ forms.input('password', type='password') }}</dd>
+</dl>
+
+# 导入并设置别名
+{% from 'forms.html' import input as input_field, textarea %}
+<dl>
+    <dt>Username</dt>
+    <dd>{{ input_field('username') }}</dd>
+    <dt>Password</dt>
+    <dd>{{ input_field('password', type='password') }}</dd>
+</dl>
+<p>{{ textarea('comment') }}</p>
+
+# 导入时包含上下文
+{% from 'forms.html' import input with context %}
 ```
-{% macro last_tweets(count=20) %}
-<div class=twitter>
-{% for tweet in models.twitter.get_last_tweets(count) %}
-<p><a href="{{ tweet.url|e }}">{{ tweet.username|e }}</a>:
-{{ tweet.parsed_text }}
-{% endfor %}
-</div>
-{% endmacro %}
+
+## 赋值
+
+```jinja2
+{% set navigation = [('index.html', 'Index'), ('about.html', 'About')] %}
+{% set key, value = call_something() %}
+
+{% set navigation %}
+    <li><a href="/">Index</a>
+    <li><a href="/downloads">Downloads</a>
+{% endset %}
+```
+
+
+
+## python 方法
+
+```jinja2
+{{ page.title.capitalize() }}
+```
+
+- abs()
+
+- float()
+
+- lower()
+
+- round()
+
+- tojson()
+
+- attr()
+
+- forceescape()
+
+- map()
+
+- safe()
+
+- trim()
+
+- batch()
+
+- format()
+
+- max()
+
+- select()
+
+- truncate()
+
+- capitalize()
+
+- groupby()
+
+- min()
+
+- selectattr()
+
+- unique()
+
+- center()
+
+- indent()
+
+- pprint()
+
+- slice()
+
+- upper()
+
+- default()
+
+- int()
+
+- random()
+
+- sort()
+
+- urlencode()
+
+- dictsort()
+
+- join()
+
+- reject()
+
+- string()
+
+- urlize()
+
+- escape()
+
+- last()
+
+- rejectattr()
+
+- striptags()
+
+- wordcount()
+
+- filesizeformat()
+
+- length()
+
+- replace()
+
+- sum()
+
+- wordwrap()
+
+- first()
+
+- list()
+
+- reverse()
+
+- title()
+
+- xmlattr()
+
+
+
+## 全局函数
+
+- `range([*start*], *stop*[, *step*])` 返回一个包含整等差级数的列表。
+
+  ```jinja2
+  <ul>
+  {% for user in users %}
+      <li>{{ user.username }}</li>
+  {% endfor %}
+  {% for number in range(10 - users|count) %}
+      <li class="empty"><span>...</span></li>
+  {% endfor %}
+  </ul>
+  ```
+
+- `lipsum(*n=5*, *html=True*, *min=20*, *max=100*)` 在模板中生成 lorem ipsum 乱数假文
+
+- `dict(***items*)` 方便的字典字面量替代品。 {'foo' : 'bar'} 与 dict(foo=bar) 等价。
+
+- `*class* cycler(**items*)`  周期计允许你在若干个值中循环，类似 loop.cycle 的工作方式。
+
+  ```jinja2
+  {% set row_class = cycler('odd', 'even') %}
+  <ul class="browser">
+  {% for folder in folders %}
+    <li class="folder {{ row_class.next() }}">{{ folder|e }}</li>
+  {% endfor %}
+  {% for filename in files %}
+    <li class="file {{ row_class.next() }}">{{ filename|e }}</li>
+  {% endfor %}
+  </ul>
+  ```
+
+  - `reset()` 重置周期计到第一个项。
+
+  - `next()` 返回当前项并跳转到下一个。
+
+  - `current` 返回当前项。
+
+- *class* `joiner`(*sep='*, *'*)  一个小巧的辅助函数用于“连接”多个节。
+
+  ```jinja2
+  {% set pipe = joiner("|") %}
+  {% if categories %} {{ pipe() }}
+      Categories: {{ categories|join(", ") }}
+  {% endif %}
+  {% if author %} {{ pipe() }}
+      Author: {{ author() }}
+  {% endif %}
+  {% if can_edit %} {{ pipe() }}
+      <a href="?action=edit">Edit</a>
+  {% endif %}
+  ```
+
+- `*class* `namespace`(*...*)` 创建一个新的容器
+
+  ```jinja2
+  {% set ns = namespace(found=false) %}
+  {% for item in items %}
+      {% if item.check_something() %}
+          {% set ns.found = true %}
+      {% endif %}
+      * {{ item.title }}
+  {% endfor %}
+  Found item having something: {{ ns.found }}
+  ```
+
+  
+
+## with 语句
+
+```jinja2
+## 创建一个新的内作用域。这个作用域中的变量在外部是不可见的。
+{% with %}
+    {% set foo = 42 %}
+    {{ foo }}           foo is 42 here
+{% endwith %}
+foo is not visible here any longer
+
+{% with a={} %}
+    {% set b = a.attribute %}
+{% endwith %}
 ```
