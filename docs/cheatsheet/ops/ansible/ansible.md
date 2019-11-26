@@ -465,6 +465,29 @@ block 中的任务正常执行，如果有任何错误，则该 rescue 部分将
         msg: '该task在错误时运行'
 ```
 
+## 循环字典中key的value值
+
+> 使用dict2items 将字典变成list, 然后使用subelements获取vlaue子元素
+```yaml
+- hosts: localhost
+  gather_facts: no
+  vars:
+    test:
+      host1:
+      - cmd1
+      - cmd2
+      host2:
+      - cmd1
+      - cmd2
+      - cmd3
+  tasks:
+    - name: test
+      debug:
+        msg: "Key={{ item.0.key }} value={{ item.1 }}"
+      loop: "{{ test | dict2items | subelements('value') }}"
+```
+
+
 > 下列是 `本末` 提供的
 
 ## 在 shell 模块中使用脚本写法与 jinja2
@@ -1269,4 +1292,79 @@ localhost | SUCCESS => {
 # json_query把列表内每个address提取出来变成新的列表,到此是为了提取IP地址列表，当然，你ansible_play_hosts是IP地址的话可以不用这么麻烦
 # 第二个map regex_replace把每个IP地址变成IP+:27017，
 # 最后再把我们的map对象转成list，得到我们想要的：['10.18.1.190:27017','10.18.1.191:27017','10.18.1.192:27017']
+```
+
+## 给集群主机自动分配ID/角色
+
+> 使用主机变量
+
+```yaml
+[cluster]
+node01 ansible_host=10.18.1.190 id=1 role=master
+node02 ansible_host=10.18.1.191 id=2 role=slave
+node03 ansible_host=10.18.1.192 id=3 role=slave
+```
+
+> 使用执行主机列表的索引定义ID, 需要同时执行集群主机
+
+```yaml
+# hosts
+[cluster]
+node01 ansible_host=10.18.1.190
+node02 ansible_host=10.18.1.191
+node03 ansible_host=10.18.1.192
+
+# tasks
+---
+- hosts: cluster
+  gather_facts: false
+  tasks:
+  # ansible_play_hosts_all是当前执行的所有主机列表，类型为有序list,
+  # inventory_hostname为各自执行主机的名字
+  # 即：在list中找出各自名字的索引做为ID值
+  - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) }}
+ 
+  # 使用id时候请转换成整型，set_fact不会帮你转换数据类型
+  - debug: msg="{{ inventory_hostname }} --> ID --> {{ id | int }}"
+  
+  # 递增10
+  - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) * 10 }}
+  
+  # 递减5
+  - set_fact: id={{ 100 - ansible_play_hosts_all.index(inventory_hostname) * 5 }}
+```
+
+**定义角色**
+
+```yaml
+---
+- hosts: cluster
+  gather_facts: false
+  tasks:
+  # 这里为了更好的展示，使用了>换行语句
+  - set_fact:
+      role: >-
+        {# 即，索引ID小于3的都分配为master #}
+        {%- if ansible_play_hosts_all.index(inventory_hostname) < 3 -%}
+          master
+        {%- else -%}
+          slave
+        {%- endif -%}
+       
+  - debug: msg="{{ inventory_hostname }} --> role --> {{ role }}"
+```
+**既分配id又分配角色**
+```yaml
+---
+- hosts: cluster
+  gather_facts: false
+  tasks:
+  - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) }}
+ 
+  # id小于3的都视为master,记得要转换为整形，set_fact不会帮你处理数据类型
+  # PS: 这里用了python的小技巧，用jinja2的if去判断也是一样的
+  - set_fact:
+      role: "{{ ['slave','master'][id|int<3] }}"
+ 
+  - debug: msg="ID--> {{ id | int }}, role --> {{ role }}"
 ```
