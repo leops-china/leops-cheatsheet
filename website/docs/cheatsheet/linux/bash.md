@@ -1,6 +1,12 @@
 # bash - Cheat Sheet
 
 - [Bash Hackers Wiki](https://wiki.bash-hackers.org/start)
+- [Advanced Bash-Scripting Guide](http://www.tldp.org/LDP/abs/html/index.html)
+- [Linux Shell Scripting Tutorial - A Beginner's handbook](http://www.freeos.com/guides/lsst/index.html)
+- [Bash 新手指南](http://www.yeolar.com/media/doc/bgb-cn/html/index.html)
+- [Shell 脚本编程 30 分钟入门](https://github.com/qinjx/30min_guides/blob/master/shell.md)
+- [命令行的艺术](https://github.com/jlevy/the-art-of-command-line/blob/master/README-zh.md)
+- [alrra/dotfiles](https://github.com/alrra/dotfiles)  这个 repo 的 shell 写的很棒
 
 ## 常用命令
 

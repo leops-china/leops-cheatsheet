@@ -81,7 +81,7 @@
 | tags               | 标记标签                                                                               |
 | throttle           | 限制并发任务在 tasks，blocks 和 playbook 级别上运行的数量。不能高于 serial 和 forks 数 |
 | vars               | 定义变量                                                                               |
-| when               | 条件表达式结果为 True 则执行 block                                                     |
+| when               | 条件表达式结果为 True 则执行 role                                                      |
 
 ## Block
 

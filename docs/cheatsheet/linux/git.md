@@ -1,3 +1,8 @@
+# git
+
+- [git-flow](http://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html)
+- [git - 简明指南](http://rogerdudler.github.io/git-guide/index.zh.html) 
+
 ```bash
 git ls-remote --heads origin
 
@@ -10,7 +15,7 @@ git checkout master
 git merge $v
 git push origin master
 
-最后一个分支
+# 最后一个分支
 # Get new tags from the remote
 $ git fetch --tags
 

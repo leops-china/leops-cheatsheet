@@ -487,6 +487,61 @@ block 中的任务正常执行，如果有任何错误，则该 rescue 部分将
       loop: "{{ test | dict2items | subelements('value') }}"
 ```
 
+## 将字典中存在的key那一项的其他key的value拼接成字符串
+
+> selectattr()通过对每个对象的指定属性应用测试来过滤对象序列。map()过滤器返回在前一步中记录的所有对象的name属性,list将前一步的结果变成列表,join将前一步的列表拼接成字符串
+
+```yaml
+---
+- hosts: test
+  gather_facts: false
+  vars:
+   - test:
+      - {'name': 'test1',}
+      - {'name': 'test2', 'hello': 'world'}
+      - {'name': 'test3'}
+      - {'name': 'test4', 'hello': 'world'}
+      - {'name': 'test5', 'hello': 'world'}
+      - {'name': 'test6'}
+  
+  tasks:
+   - debug: var=test
+   - debug: msg={{ test | selectattr("hello",'defined') | map(attribute='name') | list | join(',') }}
+```
+
+比较复杂的,拼接列表中的数据
+
+```yaml
+
+- hosts: 192.168.77.132
+  gather_facts: false
+  vars:
+   - test:
+      - {'name': 'test0', "facts": { "vars": {} } }
+      - {'name': 'test1', "facts": { "vars": { "name": ["1", "2"] } } }
+      - {'name': 'test2', "facts": { "vars": { "name": ["3"] } } }
+      - {'name': 'test3'}
+      - {'name': 'test4', "facts": { "vars": { "name": ["4"] } } }
+      - {'name': 'test5', "facts": { "vars": { "name": ["5","6"] } } }
+      - {'name': 'test6', "facts": {} }
+      - {'name': 'test7', "facts": { "vars": {} } }
+      - {'name': 'test8', "facts": { "vars": {} } }
+      - {'name': 'test9'}
+
+  tasks:
+   - debug: var=test
+   - debug:
+       msg: |-
+        {%- for t in test | selectattr('facts.vars.name','defined') | map(attribute='facts.vars.name') | reject('equalto', [])-%}
+          {%- for i in t -%}
+            {{i}}
+            {%-if not loop.last-%},{%-endif-%}
+          {%-endfor-%}
+          {%-if not loop.last-%},{%-endif-%}
+        {%-endfor-%}
+```
+
+
 
 > 下列是 `本末` 提供的
 
