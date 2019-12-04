@@ -153,6 +153,10 @@ new Docute({
           link: '/cheatsheet/dev/yaml'
         },
         {
+          title: 'json',
+          link: '/cheatsheet/dev/json'
+        },
+        {
           title: 'jsonnet',
           link: '/cheatsheet/dev/jsonnet'
         },
