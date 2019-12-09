@@ -465,83 +465,83 @@ block 中的任务正常执行，如果有任何错误，则该 rescue 部分将
         msg: '该task在错误时运行'
 ```
 
-## 循环字典中key的value值
+## 循环字典中 key 的 value 值
 
-> 使用dict2items 将字典变成list, 然后使用subelements获取vlaue子元素
+> 使用 dict2items 将字典变成 list, 然后使用 subelements 获取 vlaue 子元素
+
 ```yaml
 - hosts: localhost
   gather_facts: no
   vars:
     test:
       host1:
-      - cmd1
-      - cmd2
+        - cmd1
+        - cmd2
       host2:
-      - cmd1
-      - cmd2
-      - cmd3
+        - cmd1
+        - cmd2
+        - cmd3
   tasks:
     - name: test
       debug:
-        msg: "Key={{ item.0.key }} value={{ item.1 }}"
+        msg: 'Key={{ item.0.key }} value={{ item.1 }}'
       loop: "{{ test | dict2items | subelements('value') }}"
 ```
 
-## 将字典中存在的key那一项的其他key的value拼接成字符串
+## 将字典中存在的 key 那一项的其他 key 的 value 拼接成字符串
 
-> selectattr()通过对每个对象的指定属性应用测试来过滤对象序列。map()过滤器返回在前一步中记录的所有对象的name属性,list将前一步的结果变成列表,join将前一步的列表拼接成字符串
+> selectattr()通过对每个对象的指定属性应用测试来过滤对象序列。map()过滤器返回在前一步中记录的所有对象的 name 属性,list 将前一步的结果变成列表,join 将前一步的列表拼接成字符串
 
 ```yaml
 ---
 - hosts: test
   gather_facts: false
   vars:
-   - test:
-      - {'name': 'test1',}
-      - {'name': 'test2', 'hello': 'world'}
-      - {'name': 'test3'}
-      - {'name': 'test4', 'hello': 'world'}
-      - {'name': 'test5', 'hello': 'world'}
-      - {'name': 'test6'}
-  
+    - test:
+        - { 'name': 'test1' }
+        - { 'name': 'test2', 'hello': 'world' }
+        - { 'name': 'test3' }
+        - { 'name': 'test4', 'hello': 'world' }
+        - { 'name': 'test5', 'hello': 'world' }
+        - { 'name': 'test6' }
+
   tasks:
-   - debug: var=test
-   - debug: msg={{ test | selectattr("hello",'defined') | map(attribute='name') | list | join(',') }}
+    - debug: var=test
+    - debug: msg={{ test | selectattr("hello",'defined') | map(attribute='name') | list | join(',') }}
 ```
 
 比较复杂的,拼接列表中的数据
 
 ```yaml
-
 - hosts: 192.168.77.132
   gather_facts: false
   vars:
-   - test:
-      - {'name': 'test0', "facts": { "vars": {} } }
-      - {'name': 'test1', "facts": { "vars": { "name": ["1", "2"] } } }
-      - {'name': 'test2', "facts": { "vars": { "name": ["3"] } } }
-      - {'name': 'test3'}
-      - {'name': 'test4', "facts": { "vars": { "name": ["4"] } } }
-      - {'name': 'test5', "facts": { "vars": { "name": ["5","6"] } } }
-      - {'name': 'test6', "facts": {} }
-      - {'name': 'test7', "facts": { "vars": {} } }
-      - {'name': 'test8', "facts": { "vars": {} } }
-      - {'name': 'test9'}
+    - test:
+        - { 'name': 'test0', 'facts': { 'vars': {} } }
+        - { 'name': 'test1', 'facts': { 'vars': { 'name': ['1', '2'] } } }
+        - { 'name': 'test2', 'facts': { 'vars': { 'name': ['3'] } } }
+        - { 'name': 'test3' }
+        - { 'name': 'test4', 'facts': { 'vars': { 'name': ['4'] } } }
+        - { 'name': 'test5', 'facts': { 'vars': { 'name': ['5', '6'] } } }
+        - { 'name': 'test6', 'facts': {} }
+        - { 'name': 'test7', 'facts': { 'vars': {} } }
+        - { 'name': 'test8', 'facts': { 'vars': {} } }
+        - { 'name': 'test9' }
 
   tasks:
-   - debug: var=test
-   - debug:
-       msg: |-
-        {%- for t in test | selectattr('facts.vars.name','defined') | map(attribute='facts.vars.name') | reject('equalto', [])-%}
-          {%- for i in t -%}
-            {{i}}
+    - debug: var=test
+    - debug:
+        msg: |-
+          {%- for t in test | selectattr('facts.vars.name','defined') | map(attribute='facts.vars.name') | reject('equalto', [])-%}
+            {%- for i in t -%}
+              {{i}}
+              {%-if not loop.last-%},{%-endif-%}
+            {%-endfor-%}
             {%-if not loop.last-%},{%-endif-%}
           {%-endfor-%}
-          {%-if not loop.last-%},{%-endif-%}
-        {%-endfor-%}
+    # 不使用for循环
+    - debug: msg={{ test | selectattr('facts.vars.name','defined') | map(attribute='facts.vars.name') | list | flatten }}
 ```
-
-
 
 > 下列是 `本末` 提供的
 
@@ -1349,7 +1349,7 @@ localhost | SUCCESS => {
 # 最后再把我们的map对象转成list，得到我们想要的：['10.18.1.190:27017','10.18.1.191:27017','10.18.1.192:27017']
 ```
 
-## 给集群主机自动分配ID/角色
+## 给集群主机自动分配 ID/角色
 
 > 使用主机变量
 
@@ -1360,7 +1360,7 @@ node02 ansible_host=10.18.1.191 id=2 role=slave
 node03 ansible_host=10.18.1.192 id=3 role=slave
 ```
 
-> 使用执行主机列表的索引定义ID, 需要同时执行集群主机
+> 使用执行主机列表的索引定义 ID, 需要同时执行集群主机
 
 ```yaml
 # hosts
@@ -1378,13 +1378,13 @@ node03 ansible_host=10.18.1.192
   # inventory_hostname为各自执行主机的名字
   # 即：在list中找出各自名字的索引做为ID值
   - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) }}
- 
+
   # 使用id时候请转换成整型，set_fact不会帮你转换数据类型
   - debug: msg="{{ inventory_hostname }} --> ID --> {{ id | int }}"
-  
+
   # 递增10
   - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) * 10 }}
-  
+
   # 递减5
   - set_fact: id={{ 100 - ansible_play_hosts_all.index(inventory_hostname) * 5 }}
 ```
@@ -1396,30 +1396,32 @@ node03 ansible_host=10.18.1.192
 - hosts: cluster
   gather_facts: false
   tasks:
-  # 这里为了更好的展示，使用了>换行语句
-  - set_fact:
-      role: >-
-        {# 即，索引ID小于3的都分配为master #}
-        {%- if ansible_play_hosts_all.index(inventory_hostname) < 3 -%}
-          master
-        {%- else -%}
-          slave
-        {%- endif -%}
-       
-  - debug: msg="{{ inventory_hostname }} --> role --> {{ role }}"
+    # 这里为了更好的展示，使用了>换行语句
+    - set_fact:
+        role: >-
+          {# 即，索引ID小于3的都分配为master #}
+          {%- if ansible_play_hosts_all.index(inventory_hostname) < 3 -%}
+            master
+          {%- else -%}
+            slave
+          {%- endif -%}
+
+    - debug: msg="{{ inventory_hostname }} --> role --> {{ role }}"
 ```
-**既分配id又分配角色**
+
+**既分配 id 又分配角色**
+
 ```yaml
 ---
 - hosts: cluster
   gather_facts: false
   tasks:
-  - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) }}
- 
-  # id小于3的都视为master,记得要转换为整形，set_fact不会帮你处理数据类型
-  # PS: 这里用了python的小技巧，用jinja2的if去判断也是一样的
-  - set_fact:
-      role: "{{ ['slave','master'][id|int<3] }}"
- 
-  - debug: msg="ID--> {{ id | int }}, role --> {{ role }}"
+    - set_fact: id={{ ansible_play_hosts_all.index(inventory_hostname) }}
+
+    # id小于3的都视为master,记得要转换为整形，set_fact不会帮你处理数据类型
+    # PS: 这里用了python的小技巧，用jinja2的if去判断也是一样的
+    - set_fact:
+        role: "{{ ['slave','master'][id|int<3] }}"
+
+    - debug: msg="ID--> {{ id | int }}, role --> {{ role }}"
 ```

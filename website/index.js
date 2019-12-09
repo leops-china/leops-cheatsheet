@@ -141,12 +141,12 @@ new Docute({
           link: '/cheatsheet/linux/bash'
         },
         {
-          title: 'javascripts',
-          link: '/cheatsheet/dev/javascripts'
-        },
-        {
           title: 'jinja2',
           link: '/cheatsheet/dev/jinja2'
+        },
+        {
+          title: 'ini',
+          link: '/cheatsheet/dev/ini'
         },
         {
           title: 'yaml',
@@ -163,6 +163,10 @@ new Docute({
         {
           title: 'markdown',
           link: '/cheatsheet/dev/markdown'
+        },
+        {
+          title: 'javascripts',
+          link: '/cheatsheet/dev/javascripts'
         },
         {
           title: 'vue',
@@ -230,7 +234,7 @@ new Docute({
           title: 'docker',
           link: '/cheatsheet/container/docker'
         },
-		{
+        {
           title: 'dockerfile',
           link: '/cheatsheet/container/dockerfile'
         },
@@ -284,6 +288,15 @@ new Docute({
         {
           title: 'Ansible关键字',
           link: '/cheatsheet/ops/ansible/keywords'
+        }
+      ]
+    },
+    {
+      title: '消息队列',
+      children: [
+        {
+          title: 'RabbitMQ',
+          link: '/cheatsheet/mq/rabbitmq'
         }
       ]
     }

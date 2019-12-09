@@ -25,7 +25,12 @@ JSON 是一种由道格拉斯·克罗克福特构想和设计、轻量级的数�
 ```json
 {
   "int": 1,
-  "float": 123.456
+  "float": 123.456,
+  "temperature": -10.5,
+  "speed_of_light": 1.23e11,
+  "speed_of_light": 1.23e+11,
+  "speed_of_light": 1.23E11,
+  "speed_of_light": 1.23E+11
 }
 ```
 
