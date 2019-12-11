@@ -224,6 +224,18 @@ new Docute({
         {
           title: 'Cron',
           link: '/cheatsheet/linux/cron'
+        },
+        {
+          title: 'sudo',
+          link: '/cheatsheet/linux/sudo'
+        },
+        {
+          title: 'sysctl',
+          link: '/cheatsheet/linux/sysctl'
+        },
+        {
+          title: 'openssl',
+          link: '/cheatsheet/linux/openssl'
         }
       ]
     },

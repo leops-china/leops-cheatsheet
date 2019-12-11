@@ -95,9 +95,34 @@ rabbitmqctl cluster_status
 # 报告
 rabbitmqctl report
 
-# 创建 Queue 和 Exchange
-rabbitmqadmin declare queue --vhost=/test name=dl.queue durable=false
-rabbitmqadmin declare exchange --vhost=/test name=dlx type=fanout
+# 创建 Queue 
+rabbitmqadmin declare queue --vhost=/ name=ha1.queue durable=true
+rabbitmqctl list_queues -p /
+
+# 创建 exchange
+rabbitmqadmin declare exchange --vhost=/ name=ha1.exchange type=direct durable=true
+rabbitmqctl list_exchanges -p /
+
+# 将exchange 与queue绑定
+rabbitmqadmin declare binding --vhost=/ source=ha1.exchange destination=h1.queue routing_key=h1.queue
+rabbitmqctl list_bindings -p /
+
+# 使用队列发送消息
+rabbitmqadmin publish routing_key=ha1.queue payload="just for queue"
+
+# 使用路由发送消息
+rabbitmqadmin publish exchange=ha1.exchange routing_key="ha1.queue" payload="hello, world"
+rabbitmqadmin get queue="ha1.queue"
+
+# 消费消息
+rabbitmqadmin get queue=ha1.queue ackmode=ack_requeue_false
+
+# 同步队列
+rabbitmqctl sync_queue name
+rabbitmqctl cancel_sync_queue name
+
+# 清空队列
+rabbitmqadmin purge queue name=h1.queue
 
 # Dead Letter Queues
 rabbitmqctl set_policy -p /test  DLX ".*" '{"dead-letter-exchange":"dlx"}' --apply-to queues
@@ -135,13 +160,6 @@ rabbitmqctl stop_app
 rabbitmqctl change_cluster_node_type dist
 rabbitmqctl change_cluster_node_type ram
 rabbitmqctl start_app
-
-# 同步队列
-rabbitmqctl sync_queue name
-rabbitmqctl cancel_sync_queue name
-
-# 清空队列
-rabbitmqadmin purge queue name=h1.queue
 ```
 
 ## 插件列表
