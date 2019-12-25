@@ -173,6 +173,10 @@ new Docute({
           link: '/cheatsheet/dev/vue'
         },
         {
+          title: '正则表达式',
+          link: '/cheatsheet/dev/regex'
+        },
+        {
           title: 'python2-基础知识',
           link: '/cheatsheet/dev/python2/base'
         },

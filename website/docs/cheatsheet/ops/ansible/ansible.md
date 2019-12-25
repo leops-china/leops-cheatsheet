@@ -543,6 +543,26 @@ block 中的任务正常执行，如果有任何错误，则该 rescue 部分将
     - debug: msg={{ test | selectattr('facts.vars.name','defined') | map(attribute='facts.vars.name') | list | flatten }}
 ```
 
+
+## 按顺序执行命令
+
+有时，我们在集群中需要按顺序执行某些命令，不能并行执行，这时可以使用delegate_to和循环控制来配合使用达到目的，下列案例是每次循环到主机执行命令，循环间隔时间为2秒一次。
+
+```
+---
+- hosts: 192.168.77.130 192.168.77.131 192.168.77.132
+  tasks:
+   - name: test
+     shell: date
+     delegate_to: "{{ item }}"
+     run_once: true
+     with_items:
+       - "{{ play_hosts }}"
+     loop_control:
+       pause: 2
+```
+
+
 > 下列是 `本末` 提供的
 
 ## 在 shell 模块中使用脚本写法与 jinja2
