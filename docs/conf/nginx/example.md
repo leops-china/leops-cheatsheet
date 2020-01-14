@@ -59,6 +59,50 @@ server {
 
 ```
 stream {
+    # 全局配置
+    preread_timeout 120s;
+    proxy_connect_timeout 120s;
+    proxy_protocol_timeout 120s;
+    resolver_timeout 120s;
+    proxy_timeout 120s;
+    tcp_nodelay on;
+
+    # 设置日志格式
+    log_format proxy '$remote_addr [$time_local] '
+                 '$protocol $status $bytes_sent $bytes_received '
+                 '$session_time "$upstream_addr" '
+                 '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time"';
+
+    access_log /var/log/nginx/stream.access.log proxy;
+    error_log /var/log/nginx/stream.error.log error;
+
+    upstream app_pg {
+        hash $remote_addr consistent;
+        server 192.168.100.60:5432;
+    }
+
+    server {
+        # 不指定协议默认是TCP协议
+        listen 127.0.0.1:5432 so_keepalive=on;
+        proxy_pass app_pg;
+    }
+
+    server{
+        # keepalive的可配置参数差不多有以下几个：keepidle，keepintvl，keepcnt
+        # keepidle为连接保持时间；keepintvl为连接的间隔时间；keepcnt是连接的个数
+              # 表示将idle超时设置为30分钟，将探测间隔保留为系统默认值，并将探测计数设置为10个探测器
+        # 实际配置的格式为：so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]
+        listen *:3306 so_keepalive=30m::10;
+        proxy_connect_timeout 10s;
+        proxy_timeout 20s;
+        proxy_buffer_size 512k;
+        proxy_pass 192.168.100.60:8000;
+    }
+}
+```
+
+```
+stream {
   upstream mysql_read {
     server read1.example.com:3306 weight=5;
     server read2.example.com:3306;
@@ -69,10 +113,52 @@ stream {
     listen 3306;
     proxy_pass mysql_read;
   }
+
+
+  upstream ssh {
+    hash $remote_addr consistent;
+    server 192.168.1.42:22 weight=5;
+  }
+
+  server {
+    listen 2222;
+    proxy_pass ssh;
+  }
 }
 ```
 
 ## Udp 负载均衡
+
+```
+stream {
+    # 全局配置
+    proxy_timeout 120s;
+    tcp_nodelay on;
+
+    # 设置日志格式
+    log_format proxy '$remote_addr [$time_local] '
+                 '$protocol $status $bytes_sent $bytes_received '
+                 '$session_time "$upstream_addr" '
+                 '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time"';
+
+    access_log /var/log/nginx/stream.access.log proxy;
+    error_log /var/log/nginx/stream.error.log error;
+
+    # 配置dns负载均衡
+    upstream dns_upstreams {
+        server 1.1.1.1:53 weight=1;
+        server 1.0.0.1:53 weight=1;        # weight负载均衡权重
+        server 8.8.8.8:53 weight=1 backup; # backup标记为备用服务器
+    }
+
+    server{
+        listen 53 udp;
+        proxy_responses 1; # UDP协议专用；期望后端返回给客户端数据包的数量
+        proxy_timeout 20s; # 超时时间
+        proxy_pass dns_upstreams;
+    }
+}
+```
 
 ```
 stream {
@@ -821,4 +907,57 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; prelo
 if ($request_method = OPTIONS) {
   return 200;
 }
+```
+
+## 开启断点续传
+
+```
+add_header Accept-Ranges bytes;
+proxy_force_ranges on;
+```
+
+> 如果后端不支持断点续传时添加：proxy_force_ranges on;
+
+example
+
+```
+# curl -i --range 0-100 http://test.com/file.mp3
+
+HTTP/1.1 206 Partial Content
+...
+Accept-Ranges: bytes
+Content-Range: bytes 0-100/104239
+...
+``
+
+
+## 缓存 range
+
+> 这个要求后端支持 range 请求
+
+**缓存 range 请求的数据**
+
+```
+
+proxy_cache_key $host&uri&is_args&args$http_range;
+proxy_set_header Range $http_range;
+proxy_set_header If-Range $http_if_range;
+proxy_cache_valid 200 206;
+
+```
+
+**不缓存 range 请求的数据**
+
+只对 非 Range 的请求缓存，对 range 的下载请求不做缓存
+
+```
+
+proxy_cache_key $host&uri&is_args&args;  #key中不缓存range信息
+proxy_set_header Range $http_range;
+proxy_set_header If-Range $http_if_range;
+proxy_no_cache $http_range \$http_if_range; #加了一个配置
+proxy_cache_valid 200;
+
+```
+
 ```
