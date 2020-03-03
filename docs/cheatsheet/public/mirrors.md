@@ -169,6 +169,15 @@ sudo apt-get install docker-ce
 
 > 指定`registry-mirrors`
 
+- azure  http://dockerhub.azk8s.cn
+- tencent  https://mirror.ccs.tencentyun.com
+- daocloud  http://f1361db2.m.daocloud.io
+- netease  http://hub-mirror.c.163.com
+- ustc  https://docker.mirrors.ustc.edu.cn
+- aliyun  https://2h3po24q.mirror.aliyuncs.com
+- qiniu  https://reg-mirror.qiniu.com
+
+
 ```bash
 cp  /etc/docker/daemon.json{,-bak}
 cat > /etc/docker/daemon.json <<EOF
@@ -187,11 +196,17 @@ cat > /etc/docker/daemon.json <<EOF
     ],
     "exec-opts": ["native.cgroupdriver=systemd"],
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn/",
-        "https://registry.docker-cn.com"
+        "http://dockerhub.azk8s.cn",
+        "http://hub-mirror.c.163.com"
     ]
 }
 EOF
+```
+
+可以通过脚本进行测速在选择镜像站点
+
+```bash
+curl -sSL https://git.io/dspeed | bash
 ```
 
 **docker.io 镜像加速**
