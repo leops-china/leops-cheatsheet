@@ -346,3 +346,16 @@ scp user@host:/path/to/file /local/path  # 拷贝远程文件到本地
 scp -r user@host:/path/ /local/  # 拷贝远程目录到本地
 
 ```
+
+## screen
+screen 允许用户可以通过它同时连接多个本地或远程的命令行会话，并在其间自由切换。
+
+```
+screen -S session_name  创建新的 screen 会话
+screen -ls 显示当前所有存在的 screen 会话
+screen -r session_name 手动 attach 指定 screen 会话
+screen -d session_name 手动 detach 指定 screen 会话
+screen -L -S session_name  写入日志
+快捷键：ctrl+a + d  detach 当前会话
+快捷键：ctrl+a + k kill 当前会话
+```

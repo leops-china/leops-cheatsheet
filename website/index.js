@@ -175,41 +175,46 @@ new Docute({
         {
           title: '正则表达式',
           link: '/cheatsheet/dev/regex'
-        },
+        }
+      ]
+    },
+    {
+      title: 'Python2',
+      children: [
         {
-          title: 'python2-基础知识',
+          title: '基础知识',
           link: '/cheatsheet/dev/python2/base'
         },
         {
-          title: 'python2-排序算法',
+          title: '排序算法',
           link: '/cheatsheet/dev/python2/sort'
         },
         {
-          title: 'python2-内建函数和对象方法',
+          title: '内建函数和对象方法',
           link: '/cheatsheet/dev/python2/buildin'
         },
         {
-          title: 'python2-函数和类',
+          title: '函数和类',
           link: '/cheatsheet/dev/python2/function'
         },
         {
-          title: 'python2-异常处理',
+          title: '异常处理',
           link: '/cheatsheet/dev/python2/exception'
         },
         {
-          title: 'python2-常用模块',
+          title: '常用模块',
           link: '/cheatsheet/dev/python2/module'
         },
         {
-          title: 'python2-编码规范',
+          title: '编码规范',
           link: '/cheatsheet/dev/python2/pep008'
         },
         {
-          title: 'python2-线程与进程',
+          title: '线程与进程',
           link: '/cheatsheet/dev/python2/process'
         },
         {
-          title: 'python2-正则表达式',
+          title: '正则表达式',
           link: '/cheatsheet/dev/python2/reg'
         }
       ]
@@ -240,6 +245,19 @@ new Docute({
         {
           title: 'openssl',
           link: '/cheatsheet/linux/openssl'
+        }
+      ]
+    },
+    {
+      title: 'CI/CD',
+      children: [
+        {
+          title: 'Jenkins',
+          link: '/cheatsheet/jenkins/jenkins'
+        },
+        {
+          title: 'Jenkins-Pipeline',
+          link: '/cheatsheet/jenkins/pipeline'
         }
       ]
     },
