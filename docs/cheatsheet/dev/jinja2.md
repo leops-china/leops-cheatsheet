@@ -375,7 +375,7 @@ html = template.render(data=check_result)
 
 - urlencode(*value*):  用于url中的转义字符串(使用UTF-8编码)。 
 
-- urlize (*value*, *trim_url_limit=None*, *nofollow=False*, *target=None*, *rel=None*) : 接 受一个 url, 转换成一个<a>标签表示的 link, 这个 link 的 href 为传入的 url, innerText 是 url 截取前 trim_url_limit 个字符, nofollow 设置为 true 时, 会为这个 link 加入一个属性 rel='nofollow'
+- urlize (*value*, *trim_url_limit=None*, *nofollow=False*, *target=None*, *rel=None*) : 接 受一个 url, 转换成一个`<a>`标签表示的 link, 这个 link 的 href 为传入的 url, innerText 是 url 截取前 trim_url_limit 个字符, nofollow 设置为 true 时, 会为这个 link 加入一个属性 rel='nofollow'
 
    ```jinja2
    {{ mytext|urlize(40, true) }}

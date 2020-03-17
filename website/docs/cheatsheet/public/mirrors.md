@@ -163,7 +163,7 @@ sudo apt-get update
 sudo apt-get install docker-ce
 ```
 
-## 容器镜像
+## docker 容器镜像
 
 **docker 客户端**
 

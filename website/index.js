@@ -45,7 +45,9 @@ new Docute({
     'markdown',
     'python',
     'powershell',
-    'yaml'
+    'yaml',
+    'groovy',
+    'ini'
   ],
   plugins: [
     // process.env.NODE_ENV === 'production' && googleAnalytics('UA-54857209-11')
@@ -175,6 +177,10 @@ new Docute({
         {
           title: '正则表达式',
           link: '/cheatsheet/dev/regex'
+        },
+        {
+          title: 'groovy',
+          link: '/cheatsheet/dev/groovy'
         }
       ]
     },
