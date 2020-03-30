@@ -92,6 +92,11 @@ println "\n 数组 :${strings.getClass().getName()}"
 strings.each{
   print "$it "
 }
+
+// for
+for (item in ["A", "B", "C"]) {
+   println item
+}
 ```
 
 

@@ -960,4 +960,32 @@ proxy_cache_valid 200;
 
 ```
 
+## ssh和https使用同一个端口
+
+```
+stream {
+    upstream ssh {
+        server 192.0.2.10:22;
+    }
+
+    upstream https {
+        server 192.0.2.20:443;
+    }
+
+    map $ssl_preread_protocol $upstream {
+        default ssh;
+        "TLSv1.2" https;
+        "TLSv1.3" https;
+        "TLSv1.1" https;
+        "TLSv1.0" https;
+    }
+
+    # SSH and SSL on the same port
+    server {
+        listen 443;
+
+        proxy_pass $upstream;
+        ssl_preread on;
+    }
+}
 ```

@@ -2,6 +2,20 @@
 
 > 用于设置常用软件的国内镜像，以便加速下载资源。国内提供的[镜像站点](https://leops.cn/sites)。
 
+## 测速
+
+系统软件源测速
+
+```bash
+curl -sSL https://cdn.jsdelivr.net/gh/lework/script/shell/os_repo_speed_test.sh | bash
+```
+
+Docker hub 测速
+
+```bash
+curl -sSL https://cdn.jsdelivr.net/gh/lework/script/shell/docker_hub_speed_test.sh | bash
+```
+
 ## centos
 
 ```bash
@@ -37,13 +51,31 @@ apt-get update
 也可以直接替换源
 
 ```bash
-sudo sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+sudo sed -i 's/deb.debian.org/mirrors.163.com/g' /etc/apt/sources.list
+```
+
+## debian archive
+
+debian 旧版本系统(2[hamm ]-7[wheezy])源都放在 debian-archive 中，
+
+```
+cp /etc/apt/sources.list{,-bak}
+cat << EOF > /etc/apt/sources.list
+deb http://mirrors.163.com/debian-archive/debian/ wheezy main non-free contrib
+deb http://mirrors.163.com/debian-archive/debian/ wheezy-backports main non-free contrib
+deb-src http://mirrors.163.com/debian-archive/debian/ wheezy main non-free contrib
+deb-src http://mirrors.163.com/debian-archive/debian/ wheezy-backports main non-free contrib
+deb http://mirrors.163.com/debian-archive/debian-security/ wheezy/updates main non-free contrib
+deb-src http://mirrors.163.com/debian-archive/debian-security/ wheezy/updates main non-free contrib
+EOF
+
+apt-get -o Acquire::Check-Valid-Until=false update
 ```
 
 ## ubuntu
 
 ```bash
-sudo sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+sudo sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
 ```
 
 ## alpine
@@ -163,20 +195,19 @@ sudo apt-get update
 sudo apt-get install docker-ce
 ```
 
-## docker 容器镜像
+## 容器镜像
 
 **docker 客户端**
 
 > 指定`registry-mirrors`
 
-- azure  http://dockerhub.azk8s.cn
-- tencent  https://mirror.ccs.tencentyun.com
-- daocloud  http://f1361db2.m.daocloud.io
-- netease  http://hub-mirror.c.163.com
-- ustc  https://docker.mirrors.ustc.edu.cn
-- aliyun  https://2h3po24q.mirror.aliyuncs.com
-- qiniu  https://reg-mirror.qiniu.com
-
+- azure http://dockerhub.azk8s.cn
+- tencent https://mirror.ccs.tencentyun.com
+- daocloud http://f1361db2.m.daocloud.io
+- netease http://hub-mirror.c.163.com
+- ustc https://docker.mirrors.ustc.edu.cn
+- aliyun https://2h3po24q.mirror.aliyuncs.com
+- qiniu https://reg-mirror.qiniu.com
 
 ```bash
 cp  /etc/docker/daemon.json{,-bak}
@@ -196,8 +227,7 @@ cat > /etc/docker/daemon.json <<EOF
     ],
     "exec-opts": ["native.cgroupdriver=systemd"],
     "registry-mirrors": [
-        "http://dockerhub.azk8s.cn",
-        "http://hub-mirror.c.163.com"
+        "http://dockerhub.azk8s.cn"
     ]
 }
 EOF
@@ -211,20 +241,20 @@ curl -sSL https://git.io/dspeed | bash
 
 **docker.io 镜像加速**
 
-```
+```bash
 docker pull dockerhub.azk8s.cn/library/centos
 ```
 
 **gcr.io 镜像加速**
 
-```
+```bash
 docker pull gcr.azk8s.cn/google_containers/kube-apiserver:v1.16.3
 docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver:v1.16.3
 ```
 
 **quay.io 镜像加速**
 
-```
+```bash
 docker pull quay.azk8s.cn/coreos/kube-state-metrics:v1.7.2
 ```
 
@@ -242,6 +272,21 @@ curl -sSL https://git.io/getgcr | bash -s - -t v1.16.3
 
 # 下载quay.io镜像
 curl -sSL https://git.io/getgcr | bash -s quay.io/coreos/kube-state-metrics:v1.7.2
+```
+
+**docker HTTP/HTTPS 代理**
+
+```bash
+mkdir /etc/systemd/system/docker.service.d/
+
+cat << EOF > /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:8123/"
+Environment="HTTPS_PROXY=https://127.0.0.1:8123/"
+EOF
+
+systemctl daemon-reload
+systemctl restart docker
 ```
 
 ## kubernetes
@@ -328,7 +373,7 @@ maven 项目的`pom.xml`
 </pluginRepositories>
 ```
 
-**gradle**
+## gradle
 
 `build.gradle` 文件
 
@@ -340,4 +385,29 @@ allprojects {
         mavenCentral()
     }
 }
+```
+
+## NuGet
+
+选择工程-》NuGet 包管理器-》程序包管理器设置
+
+```
+https://nuget.cdn.azure.cn/v3/index.json
+https://repo.huaweicloud.com/repository/nuget/v3/index.json
+```
+
+## Hex
+
+```
+export HEX_MIRROR="https://hexpm.upyun.com"
+export HEX_CDN="https://hexpm.upyun.com"
+```
+
+## github 代理
+
+> 仅限访问和下载，请不要提交账号信息，需保护自己的隐私。
+
+```
+https://gh.lework.workers.dev  # 对github clone、release、archive以及项目文件进行加速
+https://github.com.cnpmjs.org  # 代理访问github站点
 ```
