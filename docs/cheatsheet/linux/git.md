@@ -648,3 +648,13 @@ Host github.com
 ProxyCommand nc -X 5 -x 127.0.0.1:1080 %h %p    
 ```
 
+
+## 创建空分支
+
+```bash
+git checkout --orphan empty-branch
+git rm -rf .
+git commit --allow-empty -m "root commit"
+git push origin empty-branch
+```
+

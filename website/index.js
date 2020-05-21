@@ -251,6 +251,14 @@ new Docute({
         {
           title: 'openssl',
           link: '/cheatsheet/linux/openssl'
+        },
+        {
+          title: 'iptables',
+          link: '/cheatsheet/linux/iptables'
+        },
+        {
+          title: 'firewalld',
+          link: '/cheatsheet/linux/firewalld'
         }
       ]
     },

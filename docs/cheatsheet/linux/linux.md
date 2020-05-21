@@ -160,24 +160,7 @@ loginctl list-users      # 列出当前登录用户
 loginctl show-user user1 # 列出显示指定用户的信息
 ```
 
-## iptables
 
-```bash
-# 开启路由转发功能
-sysctl -w net.ipv4.ip_forward=1
-
-# 为一个子网配置snat
-iptables -t nat -A POSTROUTING -s 192.168.0.0/16 -j MASQUERADE
-# 为具体的 IP 地址配置 SNAT，并指定转换后的源地址
-iptables -t nat -A POSTROUTING -s 192.168.0.2 -j SNAT --to-source 100.100.100.100
-
-# 配置DNAT
-iptables -t nat -A PREROUTING -d 100.100.100.100 -j DNAT --to-DNAT 192.168.0.2
-
-# 双向地址转换
-iptables -t nat -A POSTROUTING -s 192.168.0.2 -j SNAT --to-source 100.100.100.100
-iptables -t nat -A PREROUTING -d 100.100.100.100 -j DNAT --to-destination 192.168.0.2
-```
 
 ## Tcpdump
 
@@ -274,6 +257,8 @@ grep -E -i -w 'vivek|raj' /etc/passwd　#搜索大小写任意的 vivek 或 raj
 ## sed
 
 ```bash
+sed '/location/,/}/s/\(.*\)/#&/' nginx.conf  # 注释nginx location 区域内容
+sed '/Aprl/,+2s/\(.*\)/#&/' tt.txt           # 注释匹配行及下面2行
 sed -n '{/access fail/{g;p}};h' access.log  # 打印匹配行的上一行
 # sed 会逐行处理文件， 首先判断该行是否匹配（或包含）access fail关键字，
 #　若没有匹配，仅执行h，即将该行以覆盖方式放到后台（一个缓冲区）；
@@ -359,3 +344,130 @@ screen -L -S session_name  写入日志
 快捷键：ctrl+a + d  detach 当前会话
 快捷键：ctrl+a + k kill 当前会话
 ```
+
+
+
+## date
+
+```bash
+echo $(date +%F --date="10  day ago")
+# 2019-01-01
+
+echo $(date +%Y%m%d --date="10  day ago")
+# 20190101
+
+echo $(date '+%F %H:%M:%S')
+# 2019-01-01 00:00:00
+```
+
+
+
+## find
+
+```bash
+# find file sizes 
+find / -type f -print0 | xargs -0 -I {} du -h "{}"
+
+# find files not owned by root
+find -L /bin \! -user root
+
+# find files with permissions greater than 600
+find -perm -600 ! -perm 600 -type f
+
+# change /var/www/site permissions
+find /var/www/site -type f -print0 | xargs -0 -I {} chmod 644 "{}"
+find /var/www/site -type d -print0 | xargs -0 -I {} chmod 755 "{}"
+find /var/www/site -nouser -print0 | xargs -0 -I {} chown root:apache "{}"
+
+# only folder in current dir
+find . -maxdepth 1 -type d -print0 | xargs -0 -I {} echo "{}"
+# exclude hidden
+find . -maxdepth 1 -not -path '*/\.*' -type d -print0 | xargs -0 -I {} echo "{}"
+
+# find files older than # days
+find */ -type f -mtime +7 -print0 | xargs -0 -I {} rm -rf "{}"
+
+# find all except for var
+find / -path /var -prune -o -iname '*word*' -print
+find / -type d \( -path dir1 -o -path dir2 -o -path dir3 \) -prune -o -print
+
+# find open files
+lsof | grep "/me/open"
+```
+
+## mount
+
+```bash
+# remount rw
+mount -o remount, rw /tmp
+
+# mount dvd
+mount -t iso9660 /dev/cdrom /mnt/cdrom/
+
+# mount iso
+mount -t iso9660 -o loop name.iso /mnt/iso
+
+# make iso
+mkisofs -r -o name.iso -R -l -joliet-long -allow-lowercase /dir/*
+
+# burn iso
+dmesg | egrep -i --color 'cdrom|dvd|cd/rw|writer'
+less /proc/sys/dev/cdrom/info
+cdrecord -v -dev='/dev/sr0' name.iso
+
+# eject iso
+eject /dev/sr0
+```
+
+## yum
+
+```bash
+# yum download without install
+yum install --downloadonly --downloaddir=/home/ packagename
+yum reinstall --downloadonly --downloaddir=/home/ packagename
+# yum download with deps
+yum reinstall --downloadonly --downloaddir=/tmp $(repoquery --requires --recursive --resolve packagename)
+
+# fix very broken yum download with everything
+yum install \
+  --installroot=</path/to/tmp_dir> \
+  --downloadonly --downloaddir <rpm_dir> <package>
+  
+# remove apache
+yum erase httpd httpd-tools apr apr-util
+rpm -qa | grep httpd
+
+# inspect dependencies 
+rpm -qpR
+```
+
+## apache
+
+```bash
+# per day
+awk '{print $4}' logfilename | cut -d: -f1 | uniq -c | grep "01/Apr/2019"
+
+# per hour
+grep "01/Apr" logfilename | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":00"}' | sort -n | uniq -c
+
+# per minute
+grep "01/Apr/2019:04" logfilename | cut -d[ -f2 | cut -d] -f1 | awk -F: '{print $2":"$3}' | sort -nk1 -nk2 | uniq -c | awk '{ if ($1 > 10) print $0}'
+
+# top 10 IP hits
+awk '{ print $1}' logfilename | sort | uniq -c | sort -nr | head -n 10
+```
+
+## reboot
+
+```bash
+# Reboot
+
+echo 1 > /proc/sys/kernel/sysrq
+echo b > /proc/sysrq-trigger
+
+# Shutdown
+
+echo 1 > /proc/sys/kernel/sysrq
+echo o > /proc/sysrq-trigger
+```
+

@@ -2,6 +2,7 @@
 
 > 用于设置常用软件的国内镜像，以便加速下载资源。国内提供的[镜像站点](https://leops.cn/sites)。
 
+
 ## 测速
 
 系统软件源测速
@@ -51,7 +52,9 @@ apt-get update
 也可以直接替换源
 
 ```bash
-sudo sed -i 's/deb.debian.org/mirrors.163.com/g' /etc/apt/sources.list
+sudo sed -e 's/deb.debian.org/mirrors.163.com/g' \
+  -e 's#security.debian.org#mirrors.163.com/debian-security#g' \
+  -i /etc/apt/sources.list
 ```
 
 ## debian archive
@@ -84,9 +87,30 @@ sudo sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sourc
 sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 ```
 
+## freebsd
+
+pkg 软件源
+
+```bash
+# /usr/local/etc/pkg/repos/FreeBSD.conf
+FreeBSD: {
+  url: "pkg+http://mirrors.ustc.edu.cn/freebsd-pkg/${ABI}/latest",
+}
+
+pkg update -f
+```
+
+ports 软件源
+
+```bash
+# /etc/make.conf
+
+MASTER_SITE_OVERRIDE?=http://mirrors.ustc.edu.cn/freebsd-ports/distfiles/${DIST_SUBDIR}/
+```
+
 ## pip
 
-- 阿里云 http://mirrors.aliyun.com/pypi/simple
+- 阿里云 https://mirrors.aliyun.com/pypi/simple
 - 中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple
 - 豆瓣(douban) http://pypi.douban.com/simple
 - 清华大学 https://pypi.tuna.tsinghua.edu.cn/simple
@@ -95,23 +119,28 @@ sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 使用 pip 的时候在后面加上-i 参数，指定 pip 的下载源
 
 ```bash
- pip install numpy -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install numpy -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 上面命令每次运行需要指定网址，可进行永久修改：
+
+```bash
+pip install pip -U
+pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
+```
 
 windows 下: 在 user 目录中创建一个 pip 目录，如：`C:\Users（用户）\xx\pip`，新建文件 pip.ini，内容如下
 
 ```bash
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+index-url = https://mirrors.aliyun.com/pypi/simple
 ```
 
 linux 下: 修改 ~/.pip/pip.conf （如果没有自己创建一个）， 内容如下：
 
 ```bash
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+index-url = https://mirrors.aliyun.com/pypi/simple
 ```
 
 ## easy_install
@@ -119,7 +148,7 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```bash
 cat >> ~/.pydistutils.cfg  <<EOF
 [easy_install]
-index-url = https://mirrors.ustc.edu.cn/pypi/web/simple
+index-url = https://mirrors.aliyun.com/pypi/simple
 EOF
 ```
 
@@ -136,6 +165,8 @@ bundle config mirror.https://rubygems.org https://gems.ruby-china.com
 npm config set registry https://registry.npm.taobao.org
 npm config list
 ```
+
+## yarn
 
 ```bash
 yarn config set registry https://registry.npm.taobao.org
@@ -195,7 +226,7 @@ sudo apt-get update
 sudo apt-get install docker-ce
 ```
 
-## 容器镜像
+## docker
 
 **docker 客户端**
 
@@ -227,7 +258,7 @@ cat > /etc/docker/daemon.json <<EOF
     ],
     "exec-opts": ["native.cgroupdriver=systemd"],
     "registry-mirrors": [
-        "http://dockerhub.azk8s.cn"
+        "http://hub-mirror.c.163.com"
     ]
 }
 EOF
@@ -287,6 +318,66 @@ EOF
 
 systemctl daemon-reload
 systemctl restart docker
+```
+
+## containerd
+
+**registry代理**
+
+生成默认配置
+```bash
+containerd config default > /etc/containerd/config.toml
+```
+
+将registry.mirrors替换成代理的
+```
+    [plugins.cri.registry]
+      [plugins.cri.registry.mirrors]
+        [plugins.cri.registry.mirrors."docker.io"]
+          endpoint = ["https://registry-1.docker.io"]
+```
+
+```bash
+sed -i 's#https://registry-1.docker.io#https://docker.mirrors.ustc.edu.cn#g' /etc/containerd/config.toml
+```
+
+**http代理**
+
+```
+# /usr/lib/systemd/system/containerd.service
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target
+
+[Service]
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/bin/containerd
+KillMode=process
+Delegate=yes
+LimitNOFILE=1048576
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Environment="HTTP_PROXY=http://127.0.0.1:8123/"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## podman 
+
+```bash
+cp /etc/containers/registries.conf{,.bak}
+cat > /etc/containers/registries.conf << EOF
+unqualified-search-registries = ["docker.io"]
+
+[[registry]]
+prefix = "docker.io"
+location = "uyah70su.mirror.aliyuncs.com"
+EOF
 ```
 
 ## kubernetes
@@ -411,3 +502,12 @@ export HEX_CDN="https://hexpm.upyun.com"
 https://gh.lework.workers.dev  # 对github clone、release、archive以及项目文件进行加速
 https://github.com.cnpmjs.org  # 代理访问github站点
 ```
+
+## 前端开源项目 CDN
+
+- https://www.jsdelivr.com/
+- https://www.bootcdn.cn/
+- https://cdnjs.com/
+- http://www.staticfile.org/
+- http://jscdn.upai.com
+- https://cdn.baomitu.com/
