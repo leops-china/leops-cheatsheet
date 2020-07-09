@@ -259,12 +259,46 @@ grep -E -i -w 'vivek|raj' /etc/passwd　#搜索大小写任意的 vivek 或 raj
 ```bash
 sed '/location/,/}/s/\(.*\)/#&/' nginx.conf  # 注释nginx location 区域内容
 sed '/Aprl/,+2s/\(.*\)/#&/' tt.txt           # 注释匹配行及下面2行
-sed -n '{/access fail/{g;p}};h' access.log  # 打印匹配行的上一行
+sed -n '{/access fail/{g;p}};h' access.log   # 打印匹配行的上一行
 # sed 会逐行处理文件， 首先判断该行是否匹配（或包含）access fail关键字，
-#　若没有匹配，仅执行h，即将该行以覆盖方式放到后台（一个缓冲区）；
+# 若没有匹配，仅执行h，即将该行以覆盖方式放到后台（一个缓冲区）；
 # 若匹配上了，则执行后面的命令（{g;p}），g表示将后台内容挪到前台来（即将上一行覆盖当前行内容），p打印该行。
 
+sed 's/^[ ^t]*//' file               # 删除每行开头的前导空格（空格/制表符）
+sed 's/[ ^t]*$//' file               # 从每行末尾删除尾随空格（空格/制表符）
+sed 's/^[ ^t]*//;s/[ ^]*$//' file    # 删除每行开头和结尾的空格
 
+sed 's/foo/bar/' file        # 只替换一行中的1个实例
+sed 's/foo/bar/4' file       # 只替换一行中的4个实例
+sed 's/foo/bar/g' file       # 替换一行中的所有实例
+sed '/baz/s/foo/bar/g' file  # 只将包含“baz”的行替换为“foo”和“bar”
+sed '/baz/!s/foo/bar/g'      # 除包含“baz”的行外，用“bar”代替“foo”
+sed 's/scarlet/red/g;s/ruby/red/g;s/puce/red/g'   # 多个替换
+gsed 's/scarlet\|ruby\|puce/red/g'                # GNU sed only
+
+sed -n '/regexp/{g;1!p;};h'  # 打印紧邻regexp前面的行，但不打印包含regexp的行
+sed -n '/regexp/{n;p;}'      # 立即打印regexp之后的行，但不打印包含regexp的行
+
+sed '/Iowa/,/Montana/d'  # 打印除了两个正则表达式之间的部分之外的所有文件
+
+sed '/pattern/d' # 删除匹配模式的行
+
+# 删除文件中除第一行之外的所有连续空行
+sed '/./,/^$/!d' file       # 上面允许0个空格，EOF允许1个空格
+sed '/^$/N;/\n$/D' file     # 这允许顶部有一个空格，EOF为0
+
+
+sed '/./,$!d' file # 仅删除文件顶部所有前导空
+
+sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba' file # 仅删除文件末尾的所有尾随空白行
+
+sed -e :a -e '/\\$/N; s/\\\n//; ta' file   # 如果一行以反斜杠结尾，则将其下一行加入
+
+
+sed '1~3d' file      # 从第一行开始，每次删除3行，如删除1, 4, 7, 10, 13, 16, ...
+sed '0~3d' file      # 删除 3, 6, 9, 12, 15, 18, ...
+
+sed -n '2~5p' file   # 从第二行开始，每5行打印一次，如2, 7, 12, 17, 22, 27, ...
 ```
 
 ## sort
@@ -439,6 +473,41 @@ rpm -qa | grep httpd
 
 # inspect dependencies 
 rpm -qpR
+
+
+# 查看历史
+yum history list 
+
+# 历史信息
+yum history info httpd
+yum history summary httpd
+yum history info 8
+
+yum history package-list httpd <package2..n>
+yum history package-info httpd <package2..n>
+
+# 撤销安装
+yum history undo 8
+
+# 重新安装
+yum history redo 8
+
+# 回滚
+yum history rollback 2
+
+# 列出repo
+yum -v repolist
+yum repolist enabled
+
+# 检查更新
+yum check-update
+yum update grep.x86_64 sudo.x86_64
+
+# 列出可用的软件包
+yum --showduplicates list httpd
+yum list installed "krb?-*"
+yum list available gstreamer\*plugin\*
+yum list abrt-addon\* abrt-plugin\*
 ```
 
 ## apache
@@ -469,5 +538,22 @@ echo b > /proc/sysrq-trigger
 
 echo 1 > /proc/sys/kernel/sysrq
 echo o > /proc/sysrq-trigger
+```
+
+
+## curl
+
+```bash
+USER="PID1AV4"
+PASS="JtyZDzs34TCqamAnTVAkiarEbt-3w6exhwmAaXuu"
+AUTH=$(echo -n "${USER}:${PASS}" | base64)
+
+curl -vvv https://api-certs.domain.tld/prod/api/customer \
+--header "X-ApplicationName: My Application" \
+-H 'Accept: application/json' -H "Authorization: Basic ${AUTH}" -H 'Content-Type: application/json' \
+--cert /app/certs/api-gateway-prod.pem \
+--key /app/certs/api-gateway-prod.key \
+--key-type PEM
+
 ```
 

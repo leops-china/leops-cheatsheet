@@ -167,3 +167,20 @@ iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPTables Packet 
 iptables -A LOGGING -j DROP
 ```
 
+## 劫持流量
+
+```bash
+iptables -t nat -N SIDECAR_OUTBOUND
+iptables -t nat -A OUTPUT -p tcp -j SIDECAR_OUTBOUND
+iptables -t nat -A SIDECAR_OUTBOUND -p tcp -d 123.56.0.0 --dport 80 -j REDIRECT --to-port 80
+```
+
+## 限制进程访问
+```bash
+mkdir /sys/fs/cgroup/net_cls/block
+echo 42 > /sys/fs/cgroup/net_cls/block/net_cls.classid
+
+iptables -A OUTPUT -m cgroup --cgroup 42 -j DROP
+
+echo [pid] > /sys/fs/cgroup/net_cls/block/tasks
+```

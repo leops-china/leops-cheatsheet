@@ -59,5 +59,23 @@ crontab -e # 编辑或创建crontab文件
 crontab -l # 显示crontab文件
 crontab -r # 删除crontab文件
 crontab -v # 显示上次编辑crontab文件的时间
+crontab cron.file # 导入文件中的cron
 ```
+
+## 日志
+
+```bash
+less +G /var/log/cron
+
+
+sudo journalctl _COMM=cron
+
+# or
+
+journalctl _COMM=cron --since="date" --until="date"
+```
+
+## 工具
+
+- https://crontab-generator.org/
 

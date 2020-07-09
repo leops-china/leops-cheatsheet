@@ -29,6 +29,120 @@ PKCS 全称是 Public-Key Cryptography Standards ，是由 RSA 实验室与其�
 | p7r       | 是CA对证书请求的回复，只用于导入                             |
 | p7b       | 以树状展示证书链(certificate chain)，同时也支持单个证书，不含私钥。 |
 
+## 格式内容
+
+### RSA Public Key
+
+```
+-----BEGIN RSA PUBLIC KEY-----
+-----END RSA PUBLIC KEY-----
+```
+
+### Encrypted PEM Private Key
+
+```
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+-----END RSA PRIVATE KEY-----
+```
+
+### CRL
+
+```
+-----BEGIN X509 CRL-----
+-----END X509 CRL-----
+```
+
+### CRT
+
+```
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+```
+
+### CSR
+
+```
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
+```
+
+### NEW CSR
+
+```
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+```
+
+### PEM
+
+```
+-----END RSA PRIVATE KEY-----
+-----BEGIN RSA PRIVATE KEY-----
+```
+
+### PKCS7
+
+```
+-----BEGIN PKCS7-----
+-----END PKCS7-----
+```
+
+### PRIVATE KEY
+
+```
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+```
+
+### DSA KEY
+
+```
+-----BEGIN DSA PRIVATE KEY-----
+-----END DSA PRIVATE KEY-----
+```
+
+### Elliptic Curve
+
+```
+-----BEGIN EC PRIVATE KEY-----
+-----BEGIN EC PRIVATE KEY-----
+```
+
+### PGP Private Key
+
+```
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+-----END PGP PRIVATE KEY BLOCK-----
+```
+
+### PGP Public Key
+
+```
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+-----END PGP PUBLIC KEY BLOCK-----
+```
+
+为了让OpenSSL识别出它是一种PEM格式，它必须使用Base64进行编码，并带有以下头部
+
+```
+-----BEGIN CERTIFICATE-----
+and footer :
+-----END CERTIFICATE-----
+```
+
+此外，每行最大长度必须为79个字符。否则您将收到错误信息
+
+```
+2675996:error:0906D064:PEM routines:PEM_read_bio:bad base64 decode:pem_lib.c:818:
+```
+
+注意：PEM标准（RFC1421）强制使用64个字符长的行。 可以使用UNIX命令行实用程序转换存储为单行的PEM证书：
+
+```bash
+fold -w 64
+```
+
 
 
 ## 格式互转
@@ -45,7 +159,7 @@ openssl pkcs12 -in onovps.com.pfx -nodes -out onovps.com.pem
 openssl rsa -in onovps.com.pem -out onovps.com.key
 openssl x509 -in onovps.com.pem -out onovps.com.crt
 
-# rsa privkey  to  privkey
+# rsa privkey to privkey
 openssl pkcs8 -topk8 -nocrypt -in privkey.pem
 
 # privkey to rsa privkey
@@ -57,6 +171,9 @@ openssl x509 -in cert.crt -outform der -out cert.der
 # der  to  pem
 openssl x509 -in cert.crt -inform der -outform pem -out cert.pem
 
+# pem  to  crt
+openssl x509 -outform der -in certificate.pem -out certificate.crt
+
 # crt  to  pem
 openssl x509 -in client.crt -out client.der -outform der
 openssl x509 -in client.der -inform der -outform pem -out client.pem
@@ -64,13 +181,13 @@ openssl x509 -in client.der -inform der -outform pem -out client.pem
 # p12(pfx)  to  pem
 openssl pkcs12 -in keyStore.pfx -out keyStore.pem -nodes
 
-# pem  to p12(pfx)
+# pem  to  p12(pfx)
 openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile CACert.crt
 
-# pfx  to  jks
+# pfx to jks
 keytool -importkeystore -v  -srckeystore client.pfx -srcstoretype pkcs12  -destkeystore client.keystore -deststoretype jks
 
-# jks  to  p12(pfx)
+# jks to p12(pfx)
 keytool -importkeystore -srckeystore client_pri.keystore -destkeystore client_pri.p12 -srcstoretype JKS -deststoretype PKCS12 -srcalias imgo.tv -destalias imgo.tv -noprompt
 
 # crt  to  p2b
@@ -78,6 +195,17 @@ openssl crl2pkcs7 -nocrl -certfile child.crt -certfile ca.crt -out example.p7b
 
 # p2b  to  crt
 openssl pkcs7 -in example.p7b -print_certs -out example.crt
+
+# pem to p7b
+openssl crl2pkcs7 -nocrl -certfile certificate.cer -out certificate.p7b -certfile CACert.cer
+
+# p7b to pem
+openssl pkcs7 -print_certs -in certificate.p7b -out certificate.cer
+
+# p7b to fpx
+openssl pkcs7 -print_certs -in certificate.p7b -out certificate.cer
+
+openssl pkcs12 -export -in certificate.cer -inkey privateKey.key -out certificate.pfx -certfile CACert.cer
 ```
 
 
@@ -210,11 +338,63 @@ openssl x509 -req -in child.csr -days 365 -CA ca.crt -CAkey ca.key -set_serial 0
 
 
 
-## 测试https
+## 验证
+
+```bash
+# 验证证书
+openssl verify -untrusted ca-chain.pem client-cert.pem
+
+# 加入中间证书
+openssl verify -CAfile root.pem -untrusted intermediate-chain.pem client-cert.pem
+openssl verify -CAfile root.pem -untrusted <(cat intermediate1.pem intermediate2.pem) client-cert.pem
+```
+
+```bash
+# 检测本地证书的过期时间
+for pem in /etc/ssl/certs/*.pem; do 
+       printf '%s: %s\n' \
+          "$(date --date="$(openssl x509 -enddate -noout -in "$pem"|cut -d= -f 2)" --iso-8601)" \
+          "$pem"
+    done | sort
+    
+# 检测远程服务器的过期时间
+function check_certs () {
+  if [ -z "$1" ]
+  then
+    echo "domain name missing"
+    exit 1
+  fi
+  name="$1"
+  shift
+
+  now_epoch=$( date +%s )
+
+  dig +noall +answer $name | while read _ _ _ _ ip;
+  do
+    echo -n "$ip:"
+    expiry_date=$( echo | openssl s_client -showcerts -servername $name -connect $ip:443 2>/dev/null | openssl x509 -inform pem -noout -enddate | cut -d "=" -f 2 )
+    echo -n " $expiry_date";
+    expiry_epoch=$( date -d "$expiry_date" +%s )
+    expiry_days="$(( ($expiry_epoch - $now_epoch) / (3600 * 24) ))"
+    echo "    $expiry_days days"
+  done
+}
+
+curl --insecure -v https://www.google.com 2>&1 | awk 'BEGIN { cert=0 } /^\* Server certificate:/ { cert=1 } /^\*/ { if (cert) print }'
+```
+
+使用 s_client 进行检查
 
 ```bash
 # OpenSSL s_client
 
+openssl s_client -showcerts -servername www.example.com -connect www.example.com:443 </dev/null
+
+# 证书的完整信息
+echo | \
+    openssl s_client -servername www.example.com -connect www.example.com:443 2>/dev/null | \
+    openssl x509 -text
+    
 # OpenSSL TLSv1 command.
 openssl s_client -connect google.com:443 -tls1 < /dev/null
 
@@ -254,6 +434,18 @@ openssl rsa -in privateKey.key -check
 openssl x509 -in certificate.crt -text -noout
 openssl pkcs12 -info -in keyStore.p12
 ```
+
+
+
+## Java Key store
+
+```bash
+keytool -importcert -file certificate.cer -keystore keystore.jks -alias "Alias" 
+ ..\..\bin\keytool -import -trustcacerts -keystore cacerts -storepass changeit -noprompt -alias yourAliasName -file path\to\certificate.cer
+keytool -import -alias joe -file mycert.cer -keystore mycerts -storepass changeit
+```
+
+
 
 
 

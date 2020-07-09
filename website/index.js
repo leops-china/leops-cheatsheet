@@ -132,6 +132,10 @@ new Docute({
         {
           title: '常用公共服务',
           link: '/cheatsheet/public/public'
+        },
+        {
+          title: 'rpm库',
+          link: '/cheatsheet/public/rpm'
         }
       ]
     },
@@ -345,6 +349,15 @@ new Docute({
         {
           title: 'RabbitMQ',
           link: '/cheatsheet/mq/rabbitmq'
+        }
+      ]
+    },
+    {
+      title: '其他',
+      children: [
+        {
+          title: '可用性',
+          link: '/cheatsheet/outher/availability'
         }
       ]
     }
