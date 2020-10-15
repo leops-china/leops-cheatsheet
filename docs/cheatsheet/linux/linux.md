@@ -299,6 +299,17 @@ sed '1~3d' file      # 从第一行开始，每次删除3行，如删除1, 4, 7,
 sed '0~3d' file      # 删除 3, 6, 9, 12, 15, 18, ...
 
 sed -n '2~5p' file   # 从第二行开始，每5行打印一次，如2, 7, 12, 17, 22, 27, ...
+
+
+# 在匹配行之后插入
+sed '/^anothervalue=.*/a after=me' test.txt
+
+# 在匹配行之前插入
+sed '/^anothervalue=.*/i before=me' test.txt
+
+# 插入多行
+sed '/^anothervalue=.*/i before=me\nbefore2=me2' test.txt
+
 ```
 
 ## sort
@@ -555,5 +566,19 @@ curl -vvv https://api-certs.domain.tld/prod/api/customer \
 --key /app/certs/api-gateway-prod.key \
 --key-type PEM
 
+```
+
+
+## sudoe
+
+```bash
+sudo sh -c 'command1 && command2'
+sudo -- sh -c 'command1 && command2'
+sudo -u userNameHere -- sh -c 'command1; command2'
+sudo -- sh -c 'command1; command2'
+sudo -- bash -c 'command1; command2'
+sudo -i -- 'command1; command2; command3'
+sudo -i -- sh -c 'command1 && command2 && command3'
+sudo -S <<< "password" command
 ```
 

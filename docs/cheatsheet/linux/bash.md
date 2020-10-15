@@ -558,6 +558,7 @@ esac;
 shift;
 done
 
+# shift n 表示把第n+1个参数移到第1个参数, 即命令结束后$1的值等于$n+1的值
 if [[ "$1" == '--' ]]; then shift; fi
 
 # until
@@ -580,7 +581,7 @@ myfunc "John"              # 执行函数
 function functname() {     # 定义函数
   shell commands
   echo "$#"                # 函数参数数量
-  echo "$*"                # 函数所有参数
+  echo "$*"                # 函数所有参数, 字符串返回。
   echo "$@"                # 函数所有参数
   echo "$1"                # 函数第一个参数
   echo "$2"                # 函数第二个参数

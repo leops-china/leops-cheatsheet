@@ -160,6 +160,7 @@ EOF
 | Quad9      | https://dns.quad9.net/dns-query                                |
 | Cloudflare | https://cloudflare-dns.com/dns-query https://1.1.1.1/dns-query |
 | Google     | https://dns.google/dns-query                                   |
+| alidns     | https://dns.alidns.com/dns-query                               |
 
 ```bash
 curl -H 'accept: application/dns-json' 'https://cloudflare-dns.com/dns-query?name=baidu.com&type=AAAA'
