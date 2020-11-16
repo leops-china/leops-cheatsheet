@@ -653,7 +653,9 @@ activate some_very_long_option \
 mktmp # 创建临时目录
 ```
 
-## color
+## 颜色
+
+> https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
 ```bash
 NOCOLOR='\033[0m'
@@ -703,6 +705,49 @@ tput sgr0 – Turn off all attributes
 6 – Cyan
 7 – White
 
+```
+
+16色
+```bash
+# Foreground (text)
+echo -e "Default \e[31mRed"
+
+# Background
+echo -e "Default \e[41mRed"
+
+for clbg in {40..47} {100..107} 49 ; do
+	#Foreground
+	for clfg in {30..37} {90..97} 39 ; do
+		#Formatting
+		for attr in 0 1 2 4 5 7 ; do
+			#Print the result
+			echo -en "\e[${attr};${clbg};${clfg}m ^[${attr};${clbg};${clfg}m \e[0m"
+		done
+		echo #Newline
+	done
+done
+```
+
+256 色
+
+```bash
+# Foreground (text)
+echo -e "\e[38;5;82mHello \e[38;5;198mWorld"
+
+# Background
+echo -e "\e[40;38;5;82mHello \e[30;48;5;82m World \e[0m"
+
+for clbg in {40..47} {100..107} 49 ; do
+	#Foreground
+	for clfg in {30..37} {90..97} 39 ; do
+		#Formatting
+		for attr in 0 1 2 4 5 7 ; do
+			#Print the result
+			echo -en "\e[${attr};${clbg};${clfg}m ^[${attr};${clbg};${clfg}m \e[0m"
+		done
+		echo #Newline
+	done
+done
 ```
 
 ## 信号

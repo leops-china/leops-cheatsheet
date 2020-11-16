@@ -438,6 +438,8 @@ find / -type d \( -path dir1 -o -path dir2 -o -path dir3 \) -prune -o -print
 
 # find open files
 lsof | grep "/me/open"
+
+find /tmp -type d -name "tmp*"  ! -path /tmp/tmp.NUL0Qu7rSt -exec rm -rfv {} \;
 ```
 
 ## mount
